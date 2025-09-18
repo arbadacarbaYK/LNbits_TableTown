@@ -153,6 +153,13 @@
             align-items: center;
         }
 
+        .analysis-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
         .filter-btn {
             padding: 0.5rem 1rem;
             border: 2px solid #444;
@@ -175,6 +182,30 @@
             color: #ffffff;
             border-width: 3px;
             border-color: #ffffff;
+        }
+
+        .analysis-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #667eea;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .analysis-btn:hover {
+            border-color: #4CAF50;
+            background: #2a2a2a;
+            color: #4CAF50;
+        }
+
+        .analysis-btn.active {
+            background: #4CAF50;
+            color: #ffffff;
+            border-color: #4CAF50;
         }
 
 
@@ -401,6 +432,219 @@
             color: #ffffff;
         }
 
+        /* Dependency Info Modal (like legend) */
+        .dependency-info-modal {
+            position: absolute;
+            bottom: 60px;
+            right: 20px;
+            width: 400px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #4CAF50;
+            border-radius: 12px;
+            padding: 20px;
+            color: #ffffff;
+            font-size: 13px;
+            z-index: 1000;
+            max-height: 60vh;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+        }
+        
+        .dependency-info-content h4 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+            font-size: 14px;
+        }
+        
+        .dependency-info-item {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .dependency-info-item strong {
+            color: #4CAF50;
+        }
+        
+        .dependency-info-item .category {
+            color: #FFD700;
+            font-size: 0.8rem;
+        }
+        
+        .dependency-info-item .description {
+            color: #ccc;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+        
+        .dependency-info-item .relationships {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .dependency-info-item .relationships ul {
+            margin: 0.25rem 0 0 1rem;
+            padding: 0;
+        }
+        
+        .dependency-info-item .relationships li {
+            margin: 0.1rem 0;
+            color: #ccc;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 0;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: hidden;
+            color: #e0e0e0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            background: #2a2a2a;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #4CAF50;
+            font-size: 1.2rem;
+        }
+
+        .modal-close {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .modal-close:hover {
+            background: #c82333;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .dependency-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .dependency-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #667eea;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .dependency-btn:hover {
+            border-color: #4CAF50;
+            background: #2a2a2a;
+            color: #4CAF50;
+        }
+
+        .dependency-btn.active {
+            background: #4CAF50;
+            color: #ffffff;
+            border-color: #4CAF50;
+        }
+
+        .dependency-content {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 300px;
+        }
+
+        .dependency-graph {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .dependency-group {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .dependency-group h3 {
+            margin: 0 0 1rem 0;
+            color: #4CAF50;
+            font-size: 1rem;
+        }
+
+        .dependency-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .dependency-item {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .dependency-item strong {
+            color: #4CAF50;
+        }
+
+        .dependency-item .category {
+            color: #FFD700;
+            font-size: 0.8rem;
+        }
+
+        .dependency-item .description {
+            color: #ccc;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
         .zoom-btn {
             width: 40px;
             height: 40px;
@@ -462,9 +706,6 @@
     <div class="header">
         <h1>LNbits Table Town</h1>
         <p>Explore LNbits' complete database structure with interactive visualizations. Discover core tables, extension schemas, and relationships across all LNbits modules including Lightning payments, Nostr integration, gaming, e-commerce, and more.</p>
-        <div class="credits">
-            <p>Created by <a href="https://github.com/arbadacarbaYK/LNbits_TableTown" target="_blank">arbadacarbayk</a> | <a href="mailto:info@plebtag.com">info@plebtag.com</a></p>
-        </div>
         
         <div class="controls">
             <div class="search-container">
@@ -472,16 +713,22 @@
                 <button class="search-clear" id="searchClear" style="display: none;">×</button>
             </div>
             
-            <div class="filter-group">
-                <span style="font-weight: bold; color: #666;">Filter by:</span>
-                <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="onchain" style="border-color: #FFD700;"><span class="category-bubble" style="background-color: #FFD700;"></span> Onchain Features</button>
-                <button class="filter-btn" data-filter="nostr" style="border-color: #6600CC;"><span class="category-bubble" style="background-color: #6600CC;"></span> Nostr Integration</button>
-                <button class="filter-btn" data-filter="gaming" style="border-color: #8A0000;"><span class="category-bubble" style="background-color: #8A0000;"></span> Gaming & Entertainment</button>
-                <button class="filter-btn" data-filter="ecommerce" style="border-color: #CA6702;"><span class="category-bubble" style="background-color: #CA6702;"></span> E-commerce & Business</button>
-                <button class="filter-btn" data-filter="hardware" style="border-color: #1A202C;"><span class="category-bubble" style="background-color: #1A202C;"></span> Hardware & IoT</button>
-                <button class="filter-btn" data-filter="communication" style="border-color: #0A9396;"><span class="category-bubble" style="background-color: #0A9396;"></span> Communication & Social</button>
-            </div>
+        <div class="filter-group">
+            <span style="font-weight: bold; color: #666;">Filter by:</span>
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="onchain" style="border-color: #FFD700;"><span class="category-bubble" style="background-color: #FFD700;"></span> Onchain Features</button>
+            <button class="filter-btn" data-filter="nostr" style="border-color: #6600CC;"><span class="category-bubble" style="background-color: #6600CC;"></span> Nostr Integration</button>
+            <button class="filter-btn" data-filter="gaming" style="border-color: #8A0000;"><span class="category-bubble" style="background-color: #8A0000;"></span> Gaming & Entertainment</button>
+            <button class="filter-btn" data-filter="ecommerce" style="border-color: #CA6702;"><span class="category-bubble" style="background-color: #CA6702;"></span> E-commerce & Business</button>
+            <button class="filter-btn" data-filter="hardware" style="border-color: #1A202C;"><span class="category-bubble" style="background-color: #1A202C;"></span> Hardware & IoT</button>
+            <button class="filter-btn" data-filter="communication" style="border-color: #0A9396;"><span class="category-bubble" style="background-color: #0A9396;"></span> Communication & Social</button>
+        </div>
+        
+        <div class="analysis-group">
+            <span style="font-weight: bold; color: #666;">Tools:</span>
+            <button class="analysis-btn" id="exportView">📸 Export View</button>
+            <button class="analysis-btn" id="printView">🖨️ Print View</button>
+        </div>
             
         </div>
     </div>
@@ -718,9 +965,39 @@
         
         <!-- Toggle button for legend -->
         <button id="toggleLegend" class="legend-toggle">Legend</button>
+        
+        <!-- Dependency Info Modal (like legend) -->
+        <div class="dependency-info-modal" id="dependencyInfoModal">
+            <div class="dependency-info-content">
+                <h4>Table Dependencies</h4>
+                <div id="dependencyInfoContent">
+                    <!-- Dependency info will be rendered here -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="tooltip" id="tooltip" style="display: none;"></div>
+    
+    <!-- Dependency Analysis Modal -->
+    <div id="dependencyModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔗 Extension Dependency Analysis</h2>
+                <button class="modal-close" onclick="closeDependencyModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="dependency-controls">
+                    <button class="dependency-btn" id="showAllDeps">Show All Dependencies</button>
+                    <button class="dependency-btn" id="showCoreDeps">Core Dependencies Only</button>
+                    <button class="dependency-btn" id="showExtDeps">Extension-to-Extension</button>
+                </div>
+                <div id="dependencyContent" class="dependency-content">
+                    <!-- Dependency analysis will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Load comprehensive data from JSON file (embedded for file:// compatibility)
@@ -732,7 +1009,7 @@
         // Embedded full data (keeps all extensions visible even without fetch)
         const embeddedSchemaData = 
         
-        {"core":{"name":"Core LNbits","color":"#FF1493","description":"Complete LNbits database schema - all core tables and extension fields","tables":[{"name":"Account","description":"User accounts and authentication","technical":"Primary key: id (UUID4), stores user credentials, permissions, external_id for SSO, extra user data","fields":["id","external_id","username","password_hash","pubkey","email","extra","created_at","updated_at"]},{"name":"Wallet","description":"Lightning wallets for users","technical":"Primary key: id, foreign key: user → Account.id, stores adminkey, inkey, balance, extra wallet data","fields":["id","user","name","adminkey","inkey","deleted","created_at","updated_at","currency","balance_msat","extra"]},{"name":"Payment","description":"Payment transaction records","technical":"Primary key: checking_id, foreign key: wallet_id → Wallet.id, tracks all payments with full metadata","fields":["checking_id","payment_hash","wallet_id","amount","fee","bolt11","fiat_provider","status","memo","expiry","webhook","webhook_status","preimage","tag","extension","time","created_at","updated_at","extra"]},{"name":"AccessControlList","description":"API access control","technical":"Primary key: id, manages API permissions and endpoints","fields":["id","name","endpoints","token_id_list"]},{"name":"UserAcls","description":"User access control lists","technical":"Primary key: id, user-specific permissions and ACLs","fields":["id","access_control_list","updated_at"]},{"name":"TinyURL","description":"URL shortening service","technical":"Primary key: id, manages short URL redirects with access control","fields":["id","url","endless","wallet","time"]},{"name":"WebPushSubscription","description":"Web push notifications","technical":"Foreign key: user → Account.id, manages push notification subscriptions","fields":["endpoint","user","data","host","timestamp"]}]},"extensions":{ "lnurlp": {"name":"Pay Links","category":"ecommerce","color":"#CA6702","description":"Create static payment links and Lightning Addresses","technical":"LNURL-pay implementation with Lightning Address support","tables":[{"name":"PayLink","description":"Static payment links","technical":"Foreign key: wallet → Wallet.id, stores payment link configuration with LNURL-pay support","fields":["id","wallet","description","min","max","served_meta","served_pr","comment_chars","created_at","updated_at","username","zaps","webhook_url","webhook_headers","webhook_body","success_text","success_url","currency","fiat_base_multiplier","disposable","domain"]},{"name":"LnurlpSettings","description":"Extension settings","technical":"Stores Nostr private key for zaps functionality","fields":["nostr_private_key"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/lnurlp"},"withdraw":{"name":"Withdraw Links","category":"ecommerce","color":"#CA6702","description":"Create LNURL withdraw links for users","technical":"LNURL-withdraw implementation for Lightning withdrawals","tables":[{"name":"WithdrawLink","description":"Withdraw link configurations","technical":"Foreign key: wallet → Wallet.id, manages withdrawal links with LNURL-withdraw support","fields":["id","wallet","title","min_withdrawable","max_withdrawable","uses","wait_time","is_unique","unique_hash","k1","open_time","used","usescsv","number","webhook_url","webhook_headers","webhook_body","custom_url","created_at"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/withdraw"},"boltcards":{"name":"Bolt Cards","category":"ecommerce","color":"#CA6702","description":"Self-custody NFC card payments","technical":"NXP NTAG424 Bolt Card implementation with one-time LNURLw","tables":[{"name":"Card","description":"Bolt card configurations","technical":"Foreign key: wallet → Wallet.id, stores card data, encryption keys k0/k1/k2, and settings","fields":["id","wallet","card_name","uid","external_id","counter","tx_limit","daily_limit","enable","k0","k1","k2","prev_k0","prev_k1","prev_k2","otp","time"]},{"name":"Hit","description":"Card usage tracking","technical":"Foreign key: card_id → Card.id, tracks card taps and payments","fields":["id","card_id","ip","spent","useragent","old_ctr","new_ctr","amount","time"]},{"name":"Refund","description":"Card refund tracking","technical":"Foreign key: hit_id → Hit.id, tracks refunds for card payments","fields":["id","hit_id","refund_amount","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/boltcards"},"satspay":{"name":"SatsPay Server","category":"ecommerce","color":"#CA6702","description":"Accept Bitcoin payments on your website or app","technical":"Creates onchain and Lightning invoices for web integration","tables":[{"name":"Charge","description":"Payment charges","technical":"Foreign key: user → Account.id, stores charge configurations with onchain/Lightning support","fields":["id","user","amount","time","timestamp","balance","pending","zeroconf","fasttrack","paid","completelinktext","name","description","onchainwallet","onchainaddress","lnbitswallet","payment_request","payment_hash","webhook","completelink","custom_css","currency","currency_amount","extra"]},{"name":"SatsPayPayment","description":"Payment records","technical":"Links to core Payment table, tracks SatsPay transactions","fields":["id","charge_id","payment_hash","amount","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/satspay"},"boltz":{"name":"Boltz","category":"onchain","color":"#FFD700","description":"Swap between onchain and Lightning payments","technical":"Onchain/offchain swaps with Liquid support","tables":[{"name":"SubmarineSwap","description":"Submarine swap transactions","technical":"Foreign key: wallet → Wallet.id, manages submarine swaps (onchain→Lightning)","fields":["id","wallet","asset","amount","direction","feerate","feerate_value","payment_hash","time","status","refund_privkey","refund_address","boltz_id","expected_amount","timeout_block_height","address","bip21","redeem_script","blinding_key"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/boltz"},"watchonly":{"name":"Onchain Wallet","category":"onchain","color":"#FFD700","description":"Monitor onchain Bitcoin addresses","technical":"Watch-only wallet implementation for onchain monitoring","tables":[{"name":"WalletAccount","description":"Watch-only wallet configurations","technical":"Foreign key: user → Account.id, stores masterpub (xpub), fingerprint, address_no, and metadata","fields":["id","user","masterpub","fingerprint","title","address_no","balance","type","network","meta"]}],"dependencies":["account"],"github":"https://github.com/lnbits/watchonly"},"nostrmarket":{"name":"Nostr Market","category":"nostr","color":"#6600CC","description":"Sell products on Nostr marketplace","technical":"Nostr webshop/marketplace integration with Lightning payments","tables":[{"name":"NostrProduct","description":"Marketplace products","technical":"Foreign key: wallet → Wallet.id, stores product information","fields":["id","wallet","name","description","image","price","nostr_public_key"]},{"name":"NostrOrder","description":"Customer orders","technical":"Links to core Payment table, tracks marketplace orders","fields":["id","product_id","payment_hash","buyer_pubkey","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrmarket"},"nostrrelay":{"name":"Nostr Relay","category":"nostr","color":"#6600CC","description":"Launch your own Nostr relay","technical":"One-click Nostr relay deployment and management","tables":[{"name":"NostrRelay","description":"Relay configurations","technical":"Foreign key: wallet → Wallet.id, manages relay settings","fields":["id","wallet","name","description","public_key","relay_url","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrrelay"},"nostrclient":{"name":"Nostr Client","category":"nostr","color":"#6600CC","description":"Nostr client for extensions","technical":"Nostr event multiplexer and client functionality","tables":[{"name":"NostrClient","description":"Client configurations","technical":"Foreign key: wallet → Wallet.id, stores client settings","fields":["id","wallet","name","public_key","private_key","relays"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrclient"},"nostrnip5":{"name":"Nostr NIP-5","category":"nostr","color":"#6600CC","description":"Verify addresses for Nostr NIP-5","technical":"NIP-5 address verification and management","tables":[{"name":"NostrNip5","description":"NIP-5 address configurations","technical":"Foreign key: wallet → Wallet.id, manages NIP-5 addresses","fields":["id","wallet","name","domain","public_key","verified"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrnip5"},"satsdice":{"name":"Sats Dice","category":"gaming","color":"#8A0000","description":"Play provably fair dice games","technical":"LNURL Satoshi dice implementation with provable fairness","tables":[{"name":"SatsdiceLink","description":"Dice game sessions","technical":"Foreign key: wallet → Wallet.id, manages dice game sessions","fields":["id","wallet","title","min_bet","max_bet","multiplier","haircut","chance","base_url","amount","served_meta","served_pr","disposable","open_time"]},{"name":"SatsDiceBet","description":"Individual bets","technical":"Links to core Payment table, tracks individual bets","fields":["id","game_id","payment_hash","amount","target","roll","won","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/satsdice"},"coinflip":{"name":"Coinflip","category":"gaming","color":"#8A0000","description":"Bet sats on coinflips","technical":"Provably fair coinflip betting system","tables":[{"name":"CoinflipSettings","description":"Coinflip game settings","technical":"Foreign key: wallet_id → Wallet.id, manages coinflip game settings","fields":["id","wallet_id","user_id","max_players","max_bet","enabled","haircut"]},{"name":"Coinflip","description":"Coinflip game sessions","technical":"Foreign key: settings_id → CoinflipSettings.id, manages coinflip games","fields":["id","settings_id","name","number_of_players","buy_in","players","completed","created_at"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/coinflip"},"numbers":{"name":"Numbers","category":"gaming","color":"#8A0000","description":"Block-based numbers game","technical":"A provably fair numbers game powered by Bitcoin block data","tables":[{"name":"NumbersGame","description":"Numbers game sessions","technical":"Foreign key: wallet → Wallet.id, manages numbers games","fields":["id","wallet","name","max_bet","min_bet","active"]},{"name":"NumbersBet","description":"Individual number bets","technical":"Links to core Payment table, tracks number bets","fields":["id","game_id","payment_hash","amount","number","block_hash","won","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/numbers"},"eightball":{"name":"Magic 8ball","category":"gaming","color":"#8A0000","description":"MadBitcoin's Magic Eightball","technical":"Pay sats to get random words/responses","tables":[{"name":"EightballGame","description":"8ball game configurations","technical":"Foreign key: wallet → Wallet.id, manages 8ball games","fields":["id","wallet","name","price","responses","active"]},{"name":"EightballResponse","description":"Individual responses","technical":"Links to core Payment table, tracks 8ball responses","fields":["id","game_id","payment_hash","response","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/eightball"},"events":{"name":"Events","category":"ecommerce","color":"#CA6702","description":"Sell event tickets and manage attendees","technical":"Event ticket sales and registration system","tables":[{"name":"Event","description":"Event information","technical":"Foreign key: wallet → Wallet.id, stores event details","fields":["id","wallet","name","description","start_date","end_date","price","max_tickets"]},{"name":"EventTicket","description":"Ticket sales","technical":"Links to core Payment table, tracks ticket sales","fields":["id","event_id","payment_hash","attendee_name","attendee_email","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/events"},"invoices":{"name":"Invoices","category":"ecommerce","color":"#CA6702","description":"Create invoices for your clients","technical":"Professional invoice creation and management system","tables":[{"name":"Invoice","description":"Invoice configurations","technical":"Foreign key: wallet → Wallet.id, stores invoice details","fields":["id","wallet","name","description","amount","currency","due_date","status"]},{"name":"InvoicePayment","description":"Invoice payments","technical":"Links to core Payment table, tracks invoice payments","fields":["id","invoice_id","payment_hash","amount","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/invoices"},"paywall":{"name":"Paywall","category":"ecommerce","color":"#CA6702","description":"Create paywalls for content","technical":"Content paywall system with Lightning payments","tables":[{"name":"Paywall","description":"Paywall configurations","technical":"Foreign key: wallet → Wallet.id, stores paywall settings","fields":["id","wallet","name","description","price","content","active"]},{"name":"PaywallAccess","description":"Paywall access records","technical":"Links to core Payment table, tracks paywall access","fields":["id","paywall_id","payment_hash","access_granted","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/paywall"},"bitcoinswitch":{"name":"Bitcoin Switch","category":"hardware","color":"#1A202C","description":"Control devices with Bitcoin payments","technical":"IoT device control via Lightning payments","tables":[{"name":"BitcoinSwitch","description":"Switch configurations","technical":"Foreign key: wallet → Wallet.id, stores switch settings","fields":["id","wallet","name","description","price","gpio_pin","active"]},{"name":"SwitchAction","description":"Device actions","technical":"Links to core Payment table, tracks switch activations","fields":["id","switch_id","payment_hash","action","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/bitcoinswitch_extension"},"lnurldevice":{"name":"LNURLDevices","category":"hardware","color":"#1A202C","description":"Control IoT devices with LNURL","technical":"Points of sale, ATMs, switches via LNURL","tables":[{"name":"LNURLDevice","description":"Device configurations","technical":"Foreign key: wallet → Wallet.id, stores device settings","fields":["id","wallet","title","device","currency","amount","pin","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/lnurldevice"},"tipjar":{"name":"Tip Jar","category":"communication","color":"#0A9396","description":"Accept Bitcoin donations with messages","technical":"Donation system with message attachments","tables":[{"name":"TipJar","description":"Tip jar configurations","technical":"Foreign key: wallet → Wallet.id, stores tip jar settings","fields":["id","wallet","name","description","amount","webhook_url","active"]},{"name":"Tip","description":"Individual tips","technical":"Links to core Payment table, tracks individual tips","fields":["id","tipjar_id","payment_hash","amount","message","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/tipjar"},"streamalerts":{"name":"Stream Alerts","category":"communication","color":"#0A9396","description":"Bitcoin donations in stream alerts","technical":"Streaming platform integration for Bitcoin donations","tables":[{"name":"StreamAlert","description":"Stream alert configurations","technical":"Foreign key: wallet → Wallet.id, stores alert settings","fields":["id","wallet","name","description","amount","platform","webhook_url","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/streamalerts"},"copilot":{"name":"Streamer Copilot","category":"communication","color":"#0A9396","description":"Video tips/animations/webhooks for streamers","technical":"Streaming tools with Lightning payment integration","tables":[{"name":"CopilotAlert","description":"Streamer alert configurations","technical":"Foreign key: wallet → Wallet.id, stores alert settings","fields":["id","wallet","name","description","amount","animation","sound","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/copilot"}},"categories":{"core":{"name":"Core LNbits","color":"#0066CC","description":"Core database tables for LNbits functionality"},"payment":{"name":"Payment Extensions","color":"#00AA44","description":"Extensions for Lightning payment processing"},"onchain":{"name":"Onchain Features","color":"#FF6600","description":"Extensions with Bitcoin onchain functionality"},"nostr":{"name":"Nostr Integration","color":"#6600CC","description":"Extensions integrating with Nostr protocol"},"gaming":{"name":"Gaming & Entertainment","color":"#FFAA00","description":"Gaming and entertainment extensions"},"ecommerce":{"name":"E-commerce & Business","color":"#CC0000","description":"Business and e-commerce extensions"},"hardware":{"name":"Hardware & IoT","color":"#333333","description":"Hardware and IoT device control extensions"},"communication":{"name":"Communication & Social","color":"#8B4513","description":"Communication and social media extensions"}}};
+        {"core":{"name":"Core LNbits","color":"#FF1493","description":"Complete LNbits database schema - all core tables and extension fields","tables":[{"name":"Account","description":"User accounts and authentication","technical":"Primary key: id (UUID4), stores user credentials, permissions, external_id for SSO, extra user data","fields":["id","external_id","username","password_hash","pubkey","email","extra","created_at","updated_at"]},{"name":"Wallet","description":"Lightning wallets for users","technical":"Primary key: id, foreign key: user → Account.id, stores adminkey, inkey, balance, extra wallet data","fields":["id","user","name","adminkey","inkey","deleted","created_at","updated_at","currency","balance_msat","extra"]},{"name":"Payment","description":"Payment transaction records","technical":"Primary key: checking_id, foreign key: wallet_id → Wallet.id, tracks all payments with full metadata","fields":["checking_id","payment_hash","wallet_id","amount","fee","bolt11","fiat_provider","status","memo","expiry","webhook","webhook_status","preimage","tag","extension","time","created_at","updated_at","extra"]},{"name":"AccessControlList","description":"API access control","technical":"Primary key: id, manages API permissions and endpoints","fields":["id","name","endpoints","token_id_list"]},{"name":"UserAcls","description":"User access control lists","technical":"Primary key: id, user-specific permissions and ACLs","fields":["id","access_control_list","updated_at"]},{"name":"TinyURL","description":"URL shortening service","technical":"Primary key: id, manages short URL redirects with access control","fields":["id","url","endless","wallet","time"]},{"name":"WebPushSubscription","description":"Web push notifications","technical":"Foreign key: user → Account.id, manages push notification subscriptions","fields":["endpoint","user","data","host","timestamp"]}]},"extensions":{ "lnurlp": {"name":"Pay Links","category":"ecommerce","color":"#CA6702","description":"Create static payment links and Lightning Addresses","technical":"LNURL-pay implementation with Lightning Address support","tables":[{"name":"PayLink","description":"Static payment links","technical":"Foreign key: wallet → Wallet.id, stores payment link configuration with LNURL-pay support","fields":["id","wallet","description","min","max","served_meta","served_pr","comment_chars","created_at","updated_at","username","zaps","webhook_url","webhook_headers","webhook_body","success_text","success_url","currency","fiat_base_multiplier","disposable","domain"]},{"name":"LnurlpSettings","description":"Extension settings","technical":"Stores Nostr private key for zaps functionality","fields":["nostr_private_key"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/lnurlp"},"withdraw":{"name":"Withdraw Links","category":"ecommerce","color":"#CA6702","description":"Create LNURL withdraw links for users","technical":"LNURL-withdraw implementation for Lightning withdrawals","tables":[{"name":"WithdrawLink","description":"Withdraw link configurations","technical":"Foreign key: wallet → Wallet.id, manages withdrawal links with LNURL-withdraw support","fields":["id","wallet","title","min_withdrawable","max_withdrawable","uses","wait_time","is_unique","unique_hash","k1","open_time","used","usescsv","number","webhook_url","webhook_headers","webhook_body","custom_url","created_at"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/withdraw"},"boltcards":{"name":"Bolt Cards","category":"ecommerce","color":"#CA6702","description":"Self-custody NFC card payments","technical":"NXP NTAG424 Bolt Card implementation with one-time LNURLw","tables":[{"name":"Card","description":"Bolt card configurations","technical":"Foreign key: wallet → Wallet.id, stores card data, encryption keys k0/k1/k2, and settings","fields":["id","wallet","card_name","uid","external_id","counter","tx_limit","daily_limit","enable","k0","k1","k2","prev_k0","prev_k1","prev_k2","otp","time"]},{"name":"Hit","description":"Card usage tracking","technical":"Foreign key: card_id → Card.id, tracks card taps and payments","fields":["id","card_id","ip","spent","useragent","old_ctr","new_ctr","amount","time"]},{"name":"Refund","description":"Card refund tracking","technical":"Foreign key: hit_id → Hit.id, tracks refunds for card payments","fields":["id","hit_id","refund_amount","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/boltcards"},"satspay":{"name":"SatsPay Server","category":"ecommerce","color":"#CA6702","description":"Accept Bitcoin payments on your website or app","technical":"Creates onchain and Lightning invoices for web integration","tables":[{"name":"Charge","description":"Payment charges","technical":"Foreign key: user → Account.id, stores charge configurations with onchain/Lightning support","fields":["id","user","amount","time","timestamp","balance","pending","zeroconf","fasttrack","paid","completelinktext","name","description","onchainwallet","onchainaddress","lnbitswallet","payment_request","payment_hash","webhook","completelink","custom_css","currency","currency_amount","extra"]},{"name":"SatsPayPayment","description":"Payment records","technical":"Links to core Payment table, tracks SatsPay transactions","fields":["id","charge_id","payment_hash","amount","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/satspay"},"boltz":{"name":"Boltz","category":"onchain","color":"#FFD700","description":"Swap between onchain and Lightning payments","technical":"Onchain/offchain swaps with Liquid support","tables":[{"name":"SubmarineSwap","description":"Submarine swap transactions","technical":"Foreign key: wallet → Wallet.id, manages submarine swaps (onchain→Lightning)","fields":["id","wallet","asset","amount","direction","feerate","feerate_value","payment_hash","time","status","refund_privkey","refund_address","boltz_id","expected_amount","timeout_block_height","address","bip21","redeem_script","blinding_key"]},{"name":"BoltzSwap","description":"Boltz swap transactions","technical":"Foreign key: wallet → Wallet.id, manages Boltz swaps","fields":["id","wallet","amount","direction","asset","feerate","payment_hash","time","status","boltz_id","expected_amount","address","bip21"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/boltz"},"watchonly":{"name":"Onchain Wallet","category":"onchain","color":"#FFD700","description":"Monitor onchain Bitcoin addresses","technical":"Watch-only wallet implementation for onchain monitoring","tables":[{"name":"WalletAccount","description":"Watch-only wallet configurations","technical":"Foreign key: user → Account.id, stores masterpub (xpub), fingerprint, address_no, and metadata","fields":["id","user","masterpub","fingerprint","title","address_no","balance","type","network","meta"]},{"name":"BtcAddress","description":"Onchain Bitcoin addresses","technical":"Stores Bitcoin addresses for monitoring and payments","fields":["id","address","label","balance","tx_count","last_used","created_at"]}],"dependencies":["account"],"github":"https://github.com/lnbits/watchonly"},"nostrmarket":{"name":"Nostr Market","category":"nostr","color":"#6600CC","description":"Sell products on Nostr marketplace","technical":"Nostr webshop/marketplace integration with Lightning payments","tables":[{"name":"NostrProduct","description":"Marketplace products","technical":"Foreign key: wallet → Wallet.id, stores product information","fields":["id","wallet","name","description","image","price","nostr_public_key"]},{"name":"NostrOrder","description":"Customer orders","technical":"Links to core Payment table, tracks marketplace orders","fields":["id","product_id","payment_hash","buyer_pubkey","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrmarket"},"nostrrelay":{"name":"Nostr Relay","category":"nostr","color":"#6600CC","description":"Launch your own Nostr relay","technical":"One-click Nostr relay deployment and management","tables":[{"name":"NostrRelay","description":"Relay configurations","technical":"Foreign key: wallet → Wallet.id, manages relay settings","fields":["id","wallet","name","description","public_key","relay_url","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrrelay"},"nostrclient":{"name":"Nostr Client","category":"nostr","color":"#6600CC","description":"Nostr client for extensions","technical":"Nostr event multiplexer and client functionality","tables":[{"name":"NostrClient","description":"Client configurations","technical":"Foreign key: wallet → Wallet.id, stores client settings","fields":["id","wallet","name","public_key","private_key","relays"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrclient"},"nostrnip5":{"name":"Nostr NIP-5","category":"nostr","color":"#6600CC","description":"Verify addresses for Nostr NIP-5","technical":"NIP-5 address verification and management","tables":[{"name":"NostrNip5","description":"NIP-5 address configurations","technical":"Foreign key: wallet → Wallet.id, manages NIP-5 addresses","fields":["id","wallet","name","domain","public_key","verified"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrnip5"},"satsdice":{"name":"Sats Dice","category":"gaming","color":"#8A0000","description":"Play provably fair dice games","technical":"LNURL Satoshi dice implementation with provable fairness","tables":[{"name":"SatsdiceLink","description":"Dice game sessions","technical":"Foreign key: wallet → Wallet.id, manages dice game sessions","fields":["id","wallet","title","min_bet","max_bet","multiplier","haircut","chance","base_url","amount","served_meta","served_pr","disposable","open_time"]},{"name":"SatsDiceBet","description":"Individual bets","technical":"Links to core Payment table, tracks individual bets","fields":["id","game_id","payment_hash","amount","target","roll","won","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/satsdice"},"coinflip":{"name":"Coinflip","category":"gaming","color":"#8A0000","description":"Bet sats on coinflips","technical":"Provably fair coinflip betting system","tables":[{"name":"CoinflipSettings","description":"Coinflip game settings","technical":"Foreign key: wallet_id → Wallet.id, manages coinflip game settings","fields":["id","wallet_id","user_id","max_players","max_bet","enabled","haircut"]},{"name":"Coinflip","description":"Coinflip game sessions","technical":"Foreign key: settings_id → CoinflipSettings.id, manages coinflip games","fields":["id","settings_id","name","number_of_players","buy_in","players","completed","created_at"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/coinflip"},"numbers":{"name":"Numbers","category":"gaming","color":"#8A0000","description":"Block-based numbers game","technical":"A provably fair numbers game powered by Bitcoin block data","tables":[{"name":"NumbersGame","description":"Numbers game sessions","technical":"Foreign key: wallet → Wallet.id, manages numbers games","fields":["id","wallet","name","max_bet","min_bet","active"]},{"name":"NumbersBet","description":"Individual number bets","technical":"Links to core Payment table, tracks number bets","fields":["id","game_id","payment_hash","amount","number","block_hash","won","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/numbers"},"eightball":{"name":"Magic 8ball","category":"gaming","color":"#8A0000","description":"MadBitcoin's Magic Eightball","technical":"Pay sats to get random words/responses","tables":[{"name":"EightballGame","description":"8ball game configurations","technical":"Foreign key: wallet → Wallet.id, manages 8ball games","fields":["id","wallet","name","price","responses","active"]},{"name":"EightballResponse","description":"Individual responses","technical":"Links to core Payment table, tracks 8ball responses","fields":["id","game_id","payment_hash","response","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/eightball"},"events":{"name":"Events","category":"ecommerce","color":"#CA6702","description":"Sell event tickets and manage attendees","technical":"Event ticket sales and registration system","tables":[{"name":"Event","description":"Event information","technical":"Foreign key: wallet → Wallet.id, stores event details","fields":["id","wallet","name","description","start_date","end_date","price","max_tickets"]},{"name":"EventTicket","description":"Ticket sales","technical":"Links to core Payment table, tracks ticket sales","fields":["id","event_id","payment_hash","attendee_name","attendee_email","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/events"},"invoices":{"name":"Invoices","category":"ecommerce","color":"#CA6702","description":"Create invoices for your clients","technical":"Professional invoice creation and management system","tables":[{"name":"Invoice","description":"Invoice configurations","technical":"Foreign key: wallet → Wallet.id, stores invoice details","fields":["id","wallet","name","description","amount","currency","due_date","status"]},{"name":"InvoicePayment","description":"Invoice payments","technical":"Links to core Payment table, tracks invoice payments","fields":["id","invoice_id","payment_hash","amount","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/invoices"},"paywall":{"name":"Paywall","category":"ecommerce","color":"#CA6702","description":"Create paywalls for content","technical":"Content paywall system with Lightning payments","tables":[{"name":"Paywall","description":"Paywall configurations","technical":"Foreign key: wallet → Wallet.id, stores paywall settings","fields":["id","wallet","name","description","price","content","active"]},{"name":"PaywallAccess","description":"Paywall access records","technical":"Links to core Payment table, tracks paywall access","fields":["id","paywall_id","payment_hash","access_granted","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/paywall"},"bitcoinswitch":{"name":"Bitcoin Switch","category":"hardware","color":"#1A202C","description":"Control devices with Bitcoin payments","technical":"IoT device control via Lightning payments","tables":[{"name":"BitcoinSwitch","description":"Switch configurations","technical":"Foreign key: wallet → Wallet.id, stores switch settings","fields":["id","wallet","name","description","price","gpio_pin","active"]},{"name":"SwitchAction","description":"Device actions","technical":"Links to core Payment table, tracks switch activations","fields":["id","switch_id","payment_hash","action","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/bitcoinswitch_extension"},"lnurldevice":{"name":"LNURLDevices","category":"hardware","color":"#1A202C","description":"Control IoT devices with LNURL","technical":"Points of sale, ATMs, switches via LNURL","tables":[{"name":"LNURLDevice","description":"Device configurations","technical":"Foreign key: wallet → Wallet.id, stores device settings","fields":["id","wallet","title","device","currency","amount","pin","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/lnurldevice"},"tipjar":{"name":"Tip Jar","category":"communication","color":"#0A9396","description":"Accept Bitcoin donations with messages","technical":"Donation system with message attachments","tables":[{"name":"TipJar","description":"Tip jar configurations","technical":"Foreign key: wallet → Wallet.id, stores tip jar settings","fields":["id","wallet","name","description","amount","webhook_url","active"]},{"name":"Tip","description":"Individual tips","technical":"Links to core Payment table, tracks individual tips","fields":["id","tipjar_id","payment_hash","amount","message","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/tipjar"},"streamalerts":{"name":"Stream Alerts","category":"communication","color":"#0A9396","description":"Bitcoin donations in stream alerts","technical":"Streaming platform integration for Bitcoin donations","tables":[{"name":"StreamAlert","description":"Stream alert configurations","technical":"Foreign key: wallet → Wallet.id, stores alert settings","fields":["id","wallet","name","description","amount","platform","webhook_url","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/streamalerts"},"copilot":{"name":"Streamer Copilot","category":"communication","color":"#0A9396","description":"Video tips/animations/webhooks for streamers","technical":"Streaming tools with Lightning payment integration","tables":[{"name":"CopilotAlert","description":"Streamer alert configurations","technical":"Foreign key: wallet → Wallet.id, stores alert settings","fields":["id","wallet","name","description","amount","animation","sound","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/copilot"}},"categories":{"core":{"name":"Core LNbits","color":"#0066CC","description":"Core database tables for LNbits functionality"},"payment":{"name":"Payment Extensions","color":"#00AA44","description":"Extensions for Lightning payment processing"},"onchain":{"name":"Onchain Features","color":"#FF6600","description":"Extensions with Bitcoin onchain functionality"},"nostr":{"name":"Nostr Integration","color":"#6600CC","description":"Extensions integrating with Nostr protocol"},"gaming":{"name":"Gaming & Entertainment","color":"#FFAA00","description":"Gaming and entertainment extensions"},"ecommerce":{"name":"E-commerce & Business","color":"#CC0000","description":"Business and e-commerce extensions"},"hardware":{"name":"Hardware & IoT","color":"#333333","description":"Hardware and IoT device control extensions"},"communication":{"name":"Communication & Social","color":"#8B4513","description":"Communication and social media extensions"}}};
 
         async function loadSchemaData() {
             try {
@@ -1505,7 +1782,7 @@
                     
                     coreBottomY += totalCoreHeight;
                 }
-                const gap = 80; // Gap between core tables and extensions
+                const gap = 170; // Gap between core tables and extensions
                 const extensionAreaY = coreBottomY + gap;
                 const availableExtensionHeight = availableHeight - extensionAreaY - padding;
                 
@@ -1738,17 +2015,12 @@
             }
 
             // Add click handlers after all extensions are rendered
-            g.selectAll(".extension-group").on("click", function() {
-                const extId = d3.select(this).attr("data-extension-id");
-                if (typeof highlightExtension === 'function') {
-                    highlightExtension(extId);
-                }
-            });
-
+            // Single click handler for extension tables that calls highlightDependencies
             g.selectAll(".extension-table-group").on("click", function() {
                 clearFkLines(); // Clear FK lines when clicking on table
                 const tableName = d3.select(this).select("text").text() || d3.select(this).select("text").node()?.textContent || "";
                 const extId = d3.select(this).attr("data-extension-id");
+                console.log('Extension table clicked:', {tableName, extId});
                 if (typeof highlightDependencies === 'function' && tableName) {
                     highlightDependencies(tableName, extId);
                 }
@@ -1841,19 +2113,30 @@
         }
 
         function highlightDependencies(tableName, extensionId = null) {
+            console.log('highlightDependencies called with:', {tableName, extensionId});
+            
             // Safety check
             if (!g) {
                 console.log('Debug: g is undefined in highlightDependencies');
                 return;
             }
             
-            // Reset all highlights
+            // Reset all highlights - both core and extension tables
             g.selectAll(".table-group").style("opacity", 0.3);
+            g.selectAll(".extension-table-group").style("opacity", 0.3);
             g.selectAll("line").style("opacity", 0.1);
             g.selectAll("polygon").style("opacity", 0.1);
 
-            // Highlight clicked table
+            // Highlight clicked table (check both core and extension tables)
             g.selectAll(`.table-group`).each(function() {
+                const group = d3.select(this);
+                const text = group.select("text");
+                if (text.text() === tableName) {
+                    group.style("opacity", 1);
+                }
+            });
+            
+            g.selectAll(`.extension-table-group`).each(function() {
                 const group = d3.select(this);
                 const text = group.select("text");
                 if (text.text() === tableName) {
@@ -1862,53 +2145,120 @@
             });
 
             selectedTable = tableName;
+            
+            // Show dependency info modal
+            showDependencyInfo(tableName, extensionId);
 
-            // Define relationships for highlighting
+            // Define relationships for highlighting (BOTH DIRECTIONS)
             const relationships = {
                 'Account': ['Wallet'],
-                'Wallet': ['Account', 'Payment', 'PayLink', 'WithdrawLink', 'BoltCard', 'SatsPayCharge', 'SatsPayPayment', 'BoltzSwap', 'WatchOnlyWallet', 'NostrProduct', 'NostrOrder', 'NostrRelay', 'NostrClient', 'NostrNip5', 'SatsDiceGame', 'SatsDiceBet', 'CoinflipGame', 'CoinflipBet', 'NumbersGame', 'NumbersBet', 'EightballGame', 'EightballResponse', 'Event', 'EventTicket', 'Invoice', 'InvoicePayment', 'Paywall', 'PaywallAccess', 'BitcoinSwitch', 'SwitchAction', 'LNURLDevice', 'TipJar', 'Tip', 'StreamAlert', 'CopilotAlert'],
+                'Wallet': ['Account', 'Payment', 'PayLink', 'WithdrawLink', 'Card', 'Hit', 'Refund', 'Charge', 'SatsPayPayment', 'SubmarineSwap', 'WalletAccount', 'NostrProduct', 'NostrOrder', 'NostrRelay', 'NostrClient', 'NostrNip5', 'SatsdiceLink', 'SatsDiceBet', 'CoinflipSettings', 'Coinflip', 'NumbersGame', 'NumbersBet', 'EightballGame', 'EightballResponse', 'Event', 'EventTicket', 'Invoice', 'InvoicePayment', 'Paywall', 'PaywallAccess', 'BitcoinSwitch', 'SwitchAction', 'LNURLDevice', 'TipJar', 'Tip', 'StreamAlert', 'CopilotAlert'],
                 'Payment': ['Wallet'],
                 'AccessControlList': ['UserAcls'],
                 'UserAcls': ['AccessControlList'],
+                'TinyURL': ['Wallet'],
+                'WebPushSubscription': ['Account'],
                 'PayLink': ['Wallet'],
                 'WithdrawLink': ['Wallet'],
-                'BoltCard': ['Wallet'],
-                'SatsPayCharge': ['Wallet'],
-                'SatsPayPayment': ['Wallet'],
-                'BoltzSwap': ['Wallet'],
-                'WatchOnlyWallet': ['Wallet'],
-                'NostrProduct': ['Wallet'],
-                'NostrOrder': ['Wallet'],
+                'Card': ['Wallet', 'Hit'],
+                'Hit': ['Card', 'Refund'],
+                'Refund': ['Hit'],
+                'Charge': ['Account', 'SatsPayPayment'],
+                'SatsPayPayment': ['Charge'],
+                'SubmarineSwap': ['Wallet'],
+                'WalletAccount': ['Account'],
+                'NostrProduct': ['Wallet', 'NostrOrder'],
+                'NostrOrder': ['NostrProduct'],
                 'NostrRelay': ['Wallet'],
                 'NostrClient': ['Wallet'],
                 'NostrNip5': ['Wallet'],
-                'SatsDiceGame': ['Wallet'],
-                'SatsDiceBet': ['Wallet'],
-                'CoinflipGame': ['Wallet'],
-                'CoinflipBet': ['Wallet'],
-                'NumbersGame': ['Wallet'],
-                'NumbersBet': ['Wallet'],
-                'EightballGame': ['Wallet'],
-                'EightballResponse': ['Wallet'],
-                'Event': ['Wallet'],
-                'EventTicket': ['Wallet'],
-                'Invoice': ['Wallet'],
-                'InvoicePayment': ['Wallet'],
-                'Paywall': ['Wallet'],
-                'PaywallAccess': ['Wallet'],
-                'BitcoinSwitch': ['Wallet'],
-                'SwitchAction': ['Wallet'],
+                'SatsdiceLink': ['Wallet', 'SatsDiceBet'],
+                'SatsDiceBet': ['SatsdiceLink'],
+                'CoinflipSettings': ['Wallet', 'Coinflip'],
+                'Coinflip': ['CoinflipSettings'],
+                'NumbersGame': ['Wallet', 'NumbersBet'],
+                'NumbersBet': ['NumbersGame'],
+                'EightballGame': ['Wallet', 'EightballResponse'],
+                'EightballResponse': ['EightballGame'],
+                'Event': ['Wallet', 'EventTicket'],
+                'EventTicket': ['Event'],
+                'Invoice': ['Wallet', 'InvoicePayment'],
+                'InvoicePayment': ['Invoice'],
+                'Paywall': ['Wallet', 'PaywallAccess'],
+                'PaywallAccess': ['Paywall'],
+                'BitcoinSwitch': ['Wallet', 'SwitchAction'],
+                'SwitchAction': ['BitcoinSwitch'],
                 'LNURLDevice': ['Wallet'],
-                'TipJar': ['Wallet'],
-                'Tip': ['Wallet'],
+                'TipJar': ['Wallet', 'Tip'],
+                'Tip': ['TipJar'],
                 'StreamAlert': ['Wallet'],
-                'CopilotAlert': ['Wallet']
+                'CopilotAlert': ['Wallet'],
+                // Extension-to-Extension relationships
+                'SatsPayPayment': ['Charge', 'BtcAddress'], // SatsPay can use onchain addresses
+                'BtcAddress': ['SatsPayPayment'], // Onchain addresses used by SatsPay
+                'NostrProduct': ['NostrOrder', 'BtcAddress'], // Nostr products can have onchain addresses
+                'NostrOrder': ['NostrProduct', 'BtcAddress'], // Nostr orders can use onchain addresses
+                'BtcAddress': ['NostrProduct', 'NostrOrder'], // Onchain addresses used by Nostr
+                'Event': ['EventTicket', 'PayLink'], // Events can use PayLinks
+                'EventTicket': ['Event', 'PayLink'], // Event tickets can use PayLinks
+                'PayLink': ['Event', 'EventTicket'], // PayLinks can be used by Events
+                'Invoice': ['InvoicePayment', 'PayLink'], // Invoices can use PayLinks
+                'InvoicePayment': ['Invoice', 'PayLink'], // Invoice payments can use PayLinks
+                'PayLink': ['Invoice', 'InvoicePayment'], // PayLinks can be used by Invoices
+                'Paywall': ['PaywallAccess', 'PayLink'], // Paywalls can use PayLinks
+                'PaywallAccess': ['Paywall', 'PayLink'], // Paywall access can use PayLinks
+                'PayLink': ['Paywall', 'PaywallAccess'], // PayLinks can be used by Paywalls
+                'TipJar': ['Tip', 'PayLink'], // TipJars can use PayLinks
+                'Tip': ['TipJar', 'PayLink'], // Tips can use PayLinks
+                'PayLink': ['TipJar', 'Tip'], // PayLinks can be used by TipJar
+                'StreamAlert': ['PayLink'], // StreamAlerts can use PayLinks
+                'PayLink': ['StreamAlert'], // PayLinks can be used by StreamAlerts
+                'CopilotAlert': ['PayLink'], // CopilotAlerts can use PayLinks
+                'PayLink': ['CopilotAlert'], // PayLinks can be used by CopilotAlerts
+                'BitcoinSwitch': ['SwitchAction', 'BtcAddress'], // BitcoinSwitch can use onchain addresses
+                'SwitchAction': ['BitcoinSwitch', 'BtcAddress'], // SwitchActions can use onchain addresses
+                'BtcAddress': ['BitcoinSwitch', 'SwitchAction'], // Onchain addresses used by BitcoinSwitch
+                'LNURLDevice': ['BtcAddress'], // LNURL devices can have onchain addresses
+                'BtcAddress': ['LNURLDevice'], // Onchain addresses used by LNURL devices
+                'WatchOnlyWallet': ['BtcAddress'], // Watch-only wallets monitor onchain addresses
+                'BtcAddress': ['WatchOnlyWallet'], // Onchain addresses monitored by watch-only wallets
+                'SubmarineSwap': ['BtcAddress'], // Submarine swaps can use onchain addresses
+                'BtcAddress': ['SubmarineSwap'], // Onchain addresses used by submarine swaps
+                'BoltzSwap': ['BtcAddress'], // Boltz swaps can use onchain addresses
+                'BtcAddress': ['BoltzSwap'] // Onchain addresses used by Boltz swaps
             };
 
-            // Highlight related tables
+            // Get related tables (BOTH directions)
             const relatedTables = relationships[tableName] || [];
-            relatedTables.forEach(relatedTable => {
+            
+            // Also find tables that depend on this one (reverse lookup)
+            const dependedByTables = [];
+            Object.entries(relationships).forEach(([table, deps]) => {
+                if (deps.includes(tableName)) {
+                    dependedByTables.push(table);
+                }
+            });
+            
+            // Combine both directions
+            const allRelatedTables = [...new Set([...relatedTables, ...dependedByTables])];
+            
+            console.log(`Highlighting ${tableName}:`, {
+                dependsOn: relatedTables,
+                dependedBy: dependedByTables,
+                allRelated: allRelatedTables
+            });
+
+            // Highlight related tables (both core and extension)
+            allRelatedTables.forEach(relatedTable => {
                 g.selectAll(`.table-group`).each(function() {
+                    const group = d3.select(this);
+                    const text = group.select("text");
+                    if (text.text() === relatedTable) {
+                        group.style("opacity", 0.8);
+                    }
+                });
+                
+                g.selectAll(`.extension-table-group`).each(function() {
                     const group = d3.select(this);
                     const text = group.select("text");
                     if (text.text() === relatedTable) {
@@ -2210,6 +2560,7 @@
             g.selectAll("line").style("opacity", 0.6);
             selectedTable = null;
             clearFkLines();
+            hideDependencyInfo();
         }
 
         function initializeTableOpacity() {
@@ -2259,6 +2610,619 @@
             }
         }
 
+        // Dependency Analysis Functions
+        function analyzeExtensionDependencies() {
+            if (!schemaData) return;
+            
+            const dependencies = {
+                core: {},
+                extensionToExtension: {},
+                all: {}
+            };
+            
+            // Analyze core dependencies
+            Object.entries(schemaData.extensions).forEach(([extId, ext]) => {
+                if (ext.dependencies && ext.dependencies.length > 0) {
+                    dependencies.core[extId] = {
+                        name: ext.name,
+                        category: ext.category,
+                        description: ext.description,
+                        dependencies: ext.dependencies,
+                        color: ext.color
+                    };
+                }
+            });
+            
+            // Analyze extension-to-extension dependencies
+            Object.entries(schemaData.extensions).forEach(([extId, ext]) => {
+                dependencies.extensionToExtension[extId] = {
+                    name: ext.name,
+                    category: ext.category,
+                    description: ext.description,
+                    color: ext.color,
+                    dependsOn: [],
+                    dependedBy: []
+                };
+            });
+            
+            // Find extension-to-extension relationships
+            Object.entries(schemaData.extensions).forEach(([extId, ext]) => {
+                ext.tables.forEach(table => {
+                    table.fields.forEach(field => {
+                        // Check if field references another extension's table
+                        Object.entries(schemaData.extensions).forEach(([otherExtId, otherExt]) => {
+                            if (extId !== otherExtId) {
+                                otherExt.tables.forEach(otherTable => {
+                                    if (field === otherTable.name.toLowerCase() + '_id' || 
+                                        field === otherTable.name.toLowerCase() ||
+                                        field.includes(otherTable.name.toLowerCase())) {
+                                        dependencies.extensionToExtension[extId].dependsOn.push({
+                                            extension: otherExtId,
+                                            name: otherExt.name,
+                                            table: otherTable.name,
+                                            field: field
+                                        });
+                                        dependencies.extensionToExtension[otherExtId].dependedBy.push({
+                                            extension: extId,
+                                            name: ext.name,
+                                            table: table.name,
+                                            field: field
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    });
+                });
+            });
+            
+            // Combine all dependencies
+            dependencies.all = { ...dependencies.core, ...dependencies.extensionToExtension };
+            
+            return dependencies;
+        }
+        
+        function renderDependencyAnalysis(type = 'all') {
+            const dependencies = analyzeExtensionDependencies();
+            const content = document.getElementById('dependencyContent');
+            
+            if (!content) return;
+            
+            let html = '<div class="dependency-graph">';
+            
+            if (type === 'all' || type === 'core') {
+                html += '<div class="dependency-group">';
+                html += '<h3>🔗 Core Dependencies</h3>';
+                html += '<div class="dependency-list">';
+                
+                Object.entries(dependencies.core).forEach(([extId, ext]) => {
+                    html += `
+                        <div class="dependency-item">
+                            <strong>${ext.name}</strong>
+                            <div class="category">${ext.category}</div>
+                            <div class="description">${ext.description}</div>
+                            <div style="margin-top: 0.5rem;">
+                                <strong>Depends on:</strong> ${ext.dependencies.join(', ')}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            }
+            
+            if (type === 'all' || type === 'extension') {
+                html += '<div class="dependency-group">';
+                html += '<h3>🔗 Extension-to-Extension Dependencies</h3>';
+                html += '<div class="dependency-list">';
+                
+                Object.entries(dependencies.extensionToExtension).forEach(([extId, ext]) => {
+                    if (ext.dependsOn.length > 0 || ext.dependedBy.length > 0) {
+                        html += `
+                            <div class="dependency-item">
+                                <strong>${ext.name}</strong>
+                                <div class="category">${ext.category}</div>
+                                <div class="description">${ext.description}</div>
+                        `;
+                        
+                        if (ext.dependsOn.length > 0) {
+                            html += '<div style="margin-top: 0.5rem;"><strong>Depends on:</strong><ul>';
+                            ext.dependsOn.forEach(dep => {
+                                html += `<li>${dep.name} (${dep.table}.${dep.field})</li>`;
+                            });
+                            html += '</ul></div>';
+                        }
+                        
+                        if (ext.dependedBy.length > 0) {
+                            html += '<div style="margin-top: 0.5rem;"><strong>Depended by:</strong><ul>';
+                            ext.dependedBy.forEach(dep => {
+                                html += `<li>${dep.name} (${dep.table}.${dep.field})</li>`;
+                            });
+                            html += '</ul></div>';
+                        }
+                        
+                        html += '</div>';
+                    }
+                });
+                
+                html += '</div></div>';
+            }
+            
+            html += '</div>';
+            content.innerHTML = html;
+        }
+        
+        function openDependencyModal() {
+            console.log('openDependencyModal called');
+            const modal = document.getElementById('dependencyModal');
+            if (modal) {
+                console.log('Modal found, showing...');
+                modal.style.display = 'flex';
+                renderDependencyAnalysis('all');
+            } else {
+                console.log('Modal not found!');
+            }
+        }
+        
+        function closeDependencyModal() {
+            const modal = document.getElementById('dependencyModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        function showDependencyInfo(tableName, extensionId = null) {
+            const modal = document.getElementById('dependencyInfoModal');
+            const content = document.getElementById('dependencyInfoContent');
+            
+            if (!modal || !content) return;
+            
+            // Hide legend if it's open
+            const legend = document.getElementById('legend-explanations');
+            if (legend) {
+                legend.style.display = 'none';
+            }
+            
+            // Find table info
+            let tableInfo = null;
+            let extensionInfo = null;
+            
+            // Check core tables first
+            if (schemaData && schemaData.core && schemaData.core.tables) {
+                tableInfo = schemaData.core.tables.find(t => t.name === tableName);
+                if (tableInfo) {
+                    extensionInfo = { name: 'Core LNbits', category: 'core', color: '#FF1493' };
+                }
+            }
+            
+            // Check extension tables
+            if (!tableInfo && schemaData && schemaData.extensions) {
+                Object.entries(schemaData.extensions).forEach(([extId, ext]) => {
+                    if (ext.tables) {
+                        const foundTable = ext.tables.find(t => t.name === tableName);
+                        if (foundTable) {
+                            tableInfo = foundTable;
+                            extensionInfo = ext;
+                        }
+                    }
+                });
+            }
+            
+            if (!tableInfo) {
+                modal.style.display = 'none';
+                return;
+            }
+            
+            // Generate dependency info
+            let html = '';
+            
+            // Table basic info
+            html += `
+                <div class="dependency-info-item">
+                    <strong>${tableInfo.name}</strong>
+                    <div class="category">${extensionInfo.category}</div>
+                    <div class="description">${tableInfo.description}</div>
+                    <div class="relationships">
+                        <strong>Technical:</strong> ${tableInfo.technical}
+                    </div>
+                </div>
+            `;
+            
+            // Find related tables
+            const relatedTables = findRelatedTables(tableName, extensionId);
+            
+             if (relatedTables.dependsOn.length > 0) {
+                 html += `
+                     <div class="dependency-info-item">
+                         <strong>📥 Uses Data From:</strong>
+                         <ul>
+                             ${relatedTables.dependsOn.map(table => `<li>${table.toLowerCase()} → ${table.toLowerCase()}.id</li>`).join('')}
+                         </ul>
+                     </div>
+                 `;
+             }
+             
+             if (relatedTables.dependedBy.length > 0) {
+                 html += `
+                     <div class="dependency-info-item">
+                         <strong>📤 Provides Data To:</strong>
+                         <ul>
+                             ${relatedTables.dependedBy.map(table => `<li>${table.toLowerCase()} → ${table.toLowerCase()}.id</li>`).join('')}
+                         </ul>
+                     </div>
+                 `;
+             }
+            
+            // Show foreign key relationships
+            if (tableInfo.fields) {
+                const fkFields = tableInfo.fields.filter(field => 
+                    field === 'wallet' || field === 'user' || field === 'wallet_id' || 
+                    field.endsWith('_id') || field === 'access_control_list'
+                );
+                
+                 if (fkFields.length > 0) {
+                     html += `
+                         <div class="dependency-info-item">
+                             <strong>🔗 Foreign Key Fields:</strong>
+                             <ul>
+                                 ${fkFields.map(field => {
+                                     // Determine target table.column for clearer display
+                                     let targetTable = '';
+                                     if (field === 'wallet' || field === 'wallet_id') {
+                                         targetTable = ' → wallet.id';
+                                     } else if (field === 'user') {
+                                         targetTable = ' → account.id';
+                                     } else if (field === 'access_control_list') {
+                                         targetTable = ' → access_control_list.id';
+                                     } else if (field.endsWith('_id')) {
+                                         const baseName = field.replace('_id', '');
+                                         targetTable = ` → ${baseName}.id`;
+                                     } else {
+                                         targetTable = ' → external';
+                                     }
+                                     return `<li>${field}${targetTable}</li>`;
+                                 }).join('')}
+                             </ul>
+                         </div>
+                     `;
+                 }
+            }
+            
+            content.innerHTML = html;
+            modal.style.display = 'block';
+        }
+        
+        function findRelatedTables(tableName, extensionId = null) {
+            const dependsOn = [];
+            const dependedBy = [];
+            
+            // Define relationships based on table name
+            const relationships = {
+                'Account': ['Wallet'],
+                'Wallet': ['Account', 'Payment', 'PayLink', 'WithdrawLink', 'Card', 'Charge', 'SubmarineSwap', 'WalletAccount', 'NostrProduct', 'NostrOrder', 'NostrRelay', 'NostrClient', 'NostrNip5', 'SatsdiceLink', 'SatsDiceBet', 'CoinflipSettings', 'Coinflip', 'NumbersGame', 'NumbersBet', 'EightballGame', 'EightballResponse', 'Event', 'EventTicket', 'Invoice', 'InvoicePayment', 'Paywall', 'PaywallAccess', 'BitcoinSwitch', 'SwitchAction', 'LNURLDevice', 'TipJar', 'Tip', 'StreamAlert', 'CopilotAlert'],
+                'Payment': ['Wallet'],
+                'AccessControlList': ['UserAcls'],
+                'UserAcls': ['AccessControlList'],
+                'TinyURL': ['Wallet'],
+                'WebPushSubscription': ['Account'],
+                'PayLink': ['Wallet'],
+                'WithdrawLink': ['Wallet'],
+                'Card': ['Wallet'],
+                'Hit': ['Card'],
+                'Refund': ['Hit'],
+                'Charge': ['Account'],
+                'SatsPayPayment': ['Charge'],
+                'SubmarineSwap': ['Wallet'],
+                'WalletAccount': ['Account'],
+                'NostrProduct': ['Wallet'],
+                'NostrOrder': ['NostrProduct'],
+                'NostrRelay': ['Wallet'],
+                'NostrClient': ['Wallet'],
+                'NostrNip5': ['Wallet'],
+                'SatsdiceLink': ['Wallet'],
+                'SatsDiceBet': ['SatsdiceLink'],
+                'CoinflipSettings': ['Wallet'],
+                'Coinflip': ['CoinflipSettings'],
+                'NumbersGame': ['Wallet'],
+                'NumbersBet': ['NumbersGame'],
+                'EightballGame': ['Wallet'],
+                'EightballResponse': ['EightballGame'],
+                'Event': ['Wallet'],
+                'EventTicket': ['Event'],
+                'Invoice': ['Wallet'],
+                'InvoicePayment': ['Invoice'],
+                'Paywall': ['Wallet'],
+                'PaywallAccess': ['Paywall'],
+                'BitcoinSwitch': ['Wallet'],
+                'SwitchAction': ['BitcoinSwitch'],
+                'LNURLDevice': ['Wallet'],
+                'TipJar': ['Wallet'],
+                'Tip': ['TipJar'],
+                'StreamAlert': ['Wallet'],
+                'CopilotAlert': ['Wallet'],
+                // Extension-to-Extension relationships
+                'SatsPayPayment': ['Charge', 'BtcAddress'], // SatsPay can use onchain addresses
+                'BtcAddress': ['SatsPayPayment'], // Onchain addresses used by SatsPay
+                'NostrProduct': ['NostrOrder', 'BtcAddress'], // Nostr products can have onchain addresses
+                'NostrOrder': ['NostrProduct', 'BtcAddress'], // Nostr orders can use onchain addresses
+                'BtcAddress': ['NostrProduct', 'NostrOrder'], // Onchain addresses used by Nostr
+                'Event': ['EventTicket', 'PayLink'], // Events can use PayLinks
+                'EventTicket': ['Event', 'PayLink'], // Event tickets can use PayLinks
+                'PayLink': ['Event', 'EventTicket'], // PayLinks can be used by Events
+                'Invoice': ['InvoicePayment', 'PayLink'], // Invoices can use PayLinks
+                'InvoicePayment': ['Invoice', 'PayLink'], // Invoice payments can use PayLinks
+                'PayLink': ['Invoice', 'InvoicePayment'], // PayLinks can be used by Invoices
+                'Paywall': ['PaywallAccess', 'PayLink'], // Paywalls can use PayLinks
+                'PaywallAccess': ['Paywall', 'PayLink'], // Paywall access can use PayLinks
+                'PayLink': ['Paywall', 'PaywallAccess'], // PayLinks can be used by Paywalls
+                'TipJar': ['Tip', 'PayLink'], // TipJars can use PayLinks
+                'Tip': ['TipJar', 'PayLink'], // Tips can use PayLinks
+                'PayLink': ['TipJar', 'Tip'], // PayLinks can be used by TipJar
+                'StreamAlert': ['PayLink'], // StreamAlerts can use PayLinks
+                'PayLink': ['StreamAlert'], // PayLinks can be used by StreamAlerts
+                'CopilotAlert': ['PayLink'], // CopilotAlerts can use PayLinks
+                'PayLink': ['CopilotAlert'], // PayLinks can be used by CopilotAlerts
+                'BitcoinSwitch': ['SwitchAction', 'BtcAddress'], // BitcoinSwitch can use onchain addresses
+                'SwitchAction': ['BitcoinSwitch', 'BtcAddress'], // SwitchActions can use onchain addresses
+                'BtcAddress': ['BitcoinSwitch', 'SwitchAction'], // Onchain addresses used by BitcoinSwitch
+                'LNURLDevice': ['BtcAddress'], // LNURL devices can have onchain addresses
+                'BtcAddress': ['LNURLDevice'], // Onchain addresses used by LNURL devices
+                'WatchOnlyWallet': ['BtcAddress'], // Watch-only wallets monitor onchain addresses
+                'BtcAddress': ['WatchOnlyWallet'], // Onchain addresses monitored by watch-only wallets
+                'SubmarineSwap': ['BtcAddress'], // Submarine swaps can use onchain addresses
+                'BtcAddress': ['SubmarineSwap'], // Onchain addresses used by submarine swaps
+                'BoltzSwap': ['BtcAddress'], // Boltz swaps can use onchain addresses
+                'BtcAddress': ['BoltzSwap'] // Onchain addresses used by Boltz swaps
+            };
+            
+            // Find dependencies
+            if (relationships[tableName]) {
+                dependsOn.push(...relationships[tableName]);
+            }
+            
+            // Find what depends on this table
+            Object.entries(relationships).forEach(([table, deps]) => {
+                if (deps.includes(tableName)) {
+                    dependedBy.push(table);
+                }
+            });
+            
+            return { dependsOn, dependedBy };
+        }
+        
+        function hideDependencyInfo() {
+            const modal = document.getElementById('dependencyInfoModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Export functionality
+        function exportCurrentView() {
+            console.log('exportCurrentView called');
+            
+            if (!svg || !g) {
+                console.log('SVG or g not found!', {svg: !!svg, g: !!g});
+                alert('Schema not loaded yet. Please wait for the page to fully load.');
+                return;
+            }
+            
+            try {
+                console.log('SVG found, proceeding with export...');
+                
+                // Get the current SVG element
+                const svgElement = document.getElementById('schemaSvg');
+                if (!svgElement) {
+                    console.log('SVG element not found!');
+                    alert('SVG element not found');
+                    return;
+                }
+                
+                // Clone the SVG
+                const svgClone = svgElement.cloneNode(true);
+                
+                // Get bounding box with padding for headlines
+                let bbox;
+                try {
+                    bbox = g.node().getBBox();
+                    console.log('BBox:', bbox);
+                    // Add padding to include headlines
+                    bbox.x -= 20;
+                    bbox.y -= 50; // Extra padding for headlines
+                    bbox.width += 40;
+                    bbox.height += 100; // Extra padding for headlines
+                } catch (e) {
+                    console.log('BBox error:', e);
+                    // Fallback to SVG dimensions
+                    bbox = {
+                        x: -20,
+                        y: -50,
+                        width: (parseFloat(svgElement.getAttribute('width')) || 1200) + 40,
+                        height: (parseFloat(svgElement.getAttribute('height')) || 800) + 100
+                    };
+                }
+                
+                // Set proper dimensions
+                svgClone.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+                svgClone.setAttribute('width', '1200');
+                svgClone.setAttribute('height', '800');
+                svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                
+                // Convert to data URL
+                const svgData = new XMLSerializer().serializeToString(svgClone);
+                console.log('SVG data length:', svgData.length);
+                
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                canvas.width = 1200;
+                canvas.height = 800;
+                
+                // Set background
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                img.onload = function() {
+                    console.log('Image loaded, drawing to canvas...');
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Convert to blob and download
+                    canvas.toBlob(function(blob) {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.download = 'lnbits-schema-export.png';
+                            link.href = url;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                            console.log('Export completed successfully');
+                        } else {
+                            console.log('Blob creation failed');
+                            alert('Export failed - could not create image');
+                        }
+                    }, 'image/png');
+                };
+                
+                img.onerror = function(e) {
+                    console.log('Image load error:', e);
+                    console.log('Trying fallback SVG download...');
+                    
+                    // Fallback: Download as SVG file
+                    const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                    const svgUrl = URL.createObjectURL(svgBlob);
+                    const link = document.createElement('a');
+                    link.download = 'lnbits-schema-export.svg';
+                    link.href = svgUrl;
+                    link.click();
+                    URL.revokeObjectURL(svgUrl);
+                    console.log('SVG export completed');
+                };
+                
+                // Create data URL
+                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const svgUrl = URL.createObjectURL(svgBlob);
+                img.src = svgUrl;
+                
+            } catch (error) {
+                console.log('Export error:', error);
+                alert('Export failed: ' + error.message);
+            }
+        }
+        
+        // Print functionality
+        function printCurrentView() {
+            console.log('printCurrentView called');
+            
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank', 'width=1200,height=800');
+            
+            if (!printWindow) {
+                alert('Please allow popups for printing to work');
+                return;
+            }
+            
+            // Get current SVG content
+            const svgElement = document.getElementById('schemaSvg');
+            if (!svgElement) {
+                alert('No schema content found to print');
+                return;
+            }
+            
+            // Clone the SVG
+            const svgClone = svgElement.cloneNode(true);
+            const bbox = g.node().getBBox();
+            
+            // Set proper dimensions
+            svgClone.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+            svgClone.setAttribute('width', '100%');
+            svgClone.setAttribute('height', 'auto');
+            svgClone.style.maxWidth = '100%';
+            svgClone.style.height = 'auto';
+            svgClone.style.backgroundColor = '#0a0a0a';
+            
+            // Write the print document
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>LNbits Schema - Print View</title>
+                    <style>
+                        body { 
+                            margin: 0; 
+                            padding: 20px; 
+                            background: white; 
+                            font-family: Arial, sans-serif; 
+                        }
+                        .print-header { 
+                            text-align: center; 
+                            margin-bottom: 20px; 
+                            border-bottom: 2px solid #333;
+                            padding-bottom: 10px;
+                        }
+                        .print-header h1 { 
+                            color: #333; 
+                            margin: 0; 
+                            font-size: 24px;
+                        }
+                        .print-header p { 
+                            color: #666; 
+                            margin: 5px 0; 
+                        }
+                        .print-content {
+                            background: #0a0a0a;
+                            border-radius: 10px;
+                            padding: 20px;
+                            margin: 20px 0;
+                        }
+                        .print-footer { 
+                            text-align: center; 
+                            margin-top: 20px; 
+                            font-size: 12px; 
+                            color: #666; 
+                            border-top: 1px solid #ccc;
+                            padding-top: 10px;
+                        }
+                        @media print { 
+                            body { margin: 0; padding: 10px; }
+                            .print-header { page-break-after: avoid; }
+                            .print-content { page-break-inside: avoid; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-header">
+                        <h1>LNbits Table Town</h1>
+                        <p>Interactive Database Explorer</p>
+                        <p>Generated: ${new Date().toLocaleString()}</p>
+                    </div>
+                    <div class="print-content" id="print-content">
+                        <!-- SVG will be inserted here -->
+                    </div>
+                    <div class="print-footer">
+                        <p>Generated by LNbits Table Town - https://arbadacarbayk.github.io/LNbits_TableTown/</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            // Insert the SVG
+            const printContent = printWindow.document.getElementById('print-content');
+            if (printContent) {
+                printContent.appendChild(svgClone);
+            }
+            
+            printWindow.document.close();
+            
+            // Wait for content to load, then print
+            setTimeout(() => {
+                printWindow.focus();
+                printWindow.print();
+                // Don't close immediately, let user see the result
+            }, 1000);
+        }
+
         // Add global click handler to clear FK lines when clicking anywhere
         function setupGlobalClickHandler() {
             document.addEventListener('click', function(event) {
@@ -2274,14 +3238,112 @@
 
         // Initialize on load
         window.addEventListener('load', function() {
+            console.log('Window loaded, initializing...');
             // Only initialize if not already initialized
             if (!window.visualizationInitialized) {
+                console.log('Initializing visualization...');
                 initializeVisualization();
                 initLegendToggle();
                 setupGlobalClickHandler();
+                initAnalysisButtons();
                 window.visualizationInitialized = true;
+                console.log('Initialization complete');
+            } else {
+                console.log('Already initialized');
             }
         });
+        
+        // Also try to initialize on DOMContentLoaded as backup
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, checking buttons...');
+            setTimeout(() => {
+                const exportBtn = document.getElementById('exportView');
+                const printBtn = document.getElementById('printView');
+                console.log('Button check:', {exportBtn: !!exportBtn, printBtn: !!printBtn});
+                
+                if (exportBtn && !exportBtn.onclick) {
+                    console.log('Adding backup click handlers...');
+                    exportBtn.onclick = () => {
+                        console.log('Backup export click');
+                        exportCurrentView();
+                    };
+                    printBtn.onclick = () => {
+                        console.log('Backup print click');
+                        printCurrentView();
+                    };
+                }
+            }, 1000);
+        });
+        
+        // Initialize analysis buttons
+        function initAnalysisButtons() {
+            console.log('Initializing analysis buttons...');
+            
+            // Export button
+            const exportBtn = document.getElementById('exportView');
+            if (exportBtn) {
+                console.log('Found export button, adding listener');
+                exportBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Export button clicked');
+                    exportCurrentView();
+                });
+            } else {
+                console.log('Export button not found');
+            }
+            
+            // Print button
+            const printBtn = document.getElementById('printView');
+            if (printBtn) {
+                console.log('Found print button, adding listener');
+                printBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Print button clicked');
+                    printCurrentView();
+                });
+            } else {
+                console.log('Print button not found');
+            }
+            
+            // Dependency modal controls
+            const showAllDeps = document.getElementById('showAllDeps');
+            const showCoreDeps = document.getElementById('showCoreDeps');
+            const showExtDeps = document.getElementById('showExtDeps');
+            
+            if (showAllDeps) {
+                showAllDeps.addEventListener('click', () => {
+                    document.querySelectorAll('.dependency-btn').forEach(btn => btn.classList.remove('active'));
+                    showAllDeps.classList.add('active');
+                    renderDependencyAnalysis('all');
+                });
+            }
+            
+            if (showCoreDeps) {
+                showCoreDeps.addEventListener('click', () => {
+                    document.querySelectorAll('.dependency-btn').forEach(btn => btn.classList.remove('active'));
+                    showCoreDeps.classList.add('active');
+                    renderDependencyAnalysis('core');
+                });
+            }
+            
+            if (showExtDeps) {
+                showExtDeps.addEventListener('click', () => {
+                    document.querySelectorAll('.dependency-btn').forEach(btn => btn.classList.remove('active'));
+                    showExtDeps.classList.add('active');
+                    renderDependencyAnalysis('extension');
+                });
+            }
+            
+            // Close modal on outside click
+            const modal = document.getElementById('dependencyModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeDependencyModal();
+                    }
+                });
+            }
+        }
         
         // Debounce resize events to prevent multiple renders
         let resizeTimeout;

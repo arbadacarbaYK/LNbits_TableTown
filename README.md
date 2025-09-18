@@ -4,13 +4,42 @@
 
 ## 🎯 Overview
 
-LNbits Table Town is an interactive database schema visualization that provides a comprehensive, zoomable, and filterable view of the LNbits database structure, including all 50+ extensions. It's designed for both developers and end-users to understand the LNbits ecosystem.
+LNbits Table Town is an interactive database schema visualization that provides a comprehensive, zoomable, and filterable view of the LNbits database structure, including all extensions. It's designed for both developers and end-users to understand the LNbits ecosystem.
 
 **Live Demo**: [https://arbadacarbayk.github.io/LNbits_TableTown/](https://arbadacarbayk.github.io/LNbits_TableTown/)
 
-**Author**: [arbadacarbayk](https://github.com/arbadacarbaYK) | [info@plebtag.com](mailto:info@plebtag.com)
+<img height="250" alt="Screenshot from 2025-09-18 13-47-29" src="https://github.com/user-attachments/assets/22ac3b92-7cf2-4ca1-8bad-0f721d8147ce" />
 
 ## 🚀 Features
+
+### 🎯 Interactive Table Exploration
+Click any table (core or extension) to see detailed dependency information and highlight related tables.
+
+<img height="200" alt="Interactive table highlighting" src="https://github.com/user-attachments/assets/a3b718a0-92e3-4010-9221-4e8bfd66370b" />
+
+### 📊 Dependency Analysis Modal
+When you click a table, a modal appears showing:
+- **📥 Uses Data From**: Which tables this table reads data from
+- **📤 Provides Data To**: Which tables use data from this table  
+- **🔗 Foreign Key Fields**: Specific field relationships (e.g., `user → account.id`)
+
+<img height="200" alt="Dependency analysis modal" src="https://github.com/user-attachments/assets/293dcfd3-18c9-41f7-8321-03f89c005b1b" />
+
+### 📖 Comprehensive Legend
+Detailed explanations of all abbreviations, data types, and field formats with examples.
+
+<img height="250" alt="Legend with explanations" src="https://github.com/user-attachments/assets/0841023d-b93f-41f5-b56c-76e2e7f5f259" />
+
+### 🔍 Smart Search & Filtering
+Real-time search with highlighted results and category-based filtering.
+
+<img height="250" alt="Search functionality" src="https://github.com/user-attachments/assets/2dbf583c-cc8b-4980-bb49-9a7b7359d89d" />
+
+### 📸 Export & Print Features
+- **Export View**: Download current view as PNG image
+- **Print View**: Generate print-optimized documentation
+- **SVG Fallback**: Automatic fallback to SVG if PNG export fails
+
 
 ### 🎮 Interactive Interface
 - **Zoomable & Pannable**: Navigate large schemas with mouse/touch gestures
@@ -27,7 +56,7 @@ LNbits Table Town is an interactive database schema visualization that provides 
 - **Highlight System**: Click to highlight dependencies
 
 ### 📊 Comprehensive Data
-- **50+ Extensions**: Complete database models for all vetted extensions
+- **All Extensions**: Complete database models for all vetted extensions
 - **Table Definitions**: Fields, relationships, and descriptions
 - **Dependency Mapping**: Shows which extensions depend on core tables
 - **GitHub Links**: Direct links to extension repositories
@@ -82,7 +111,7 @@ LNbits Table Town is an interactive database schema visualization that provides 
 ### 1. **Open the Interface**
 ```bash
 # Open in your web browser
-open lnbits_schema_interactive.html
+open index.html
 ```
 
 ### 2. **Navigate the Schema**
@@ -105,29 +134,23 @@ open lnbits_schema_interactive.html
 - Results update in real-time
 
 ### 5. **Explore Dependencies**
-- **Click on Core Tables**: See which extensions depend on them
-- **Click on Extension Tables**: See their relationships to core
-- **Click on Extensions**: Highlight the entire extension group
-- **Click on Empty Space**: Reset all highlights
+- **Click any Table**: See detailed dependency information in modal
+- **Highlight Related Tables**: Both core and extension tables highlight
+- **Bidirectional Relationships**: Shows both "uses data from" and "provides data to"
+- **Foreign Key Details**: See specific field relationships (e.g., `user → account.id`)
+- **Click Empty Space**: Reset all highlights and close modal
 
-### 6. **Switch Views**
-- **Developer View**: Shows technical details, field definitions, GitHub links
-- **End-User View**: Shows user-friendly descriptions and use cases
+### 6. **Export & Print**
+- **Export View**: Click "📸 Export View" to download PNG image
+- **Print View**: Click "🖨️ Print View" for print-optimized documentation
+- **SVG Fallback**: Automatic fallback if PNG export fails
 
 ## 🛠️ Technical Details
-
-### File Structure
-```
-lnbits_schema_interactive.html    # Main interactive interface
-lnbits_extensions_data.json       # Comprehensive extension data
-LNBITS_INTERACTIVE_SCHEMA_DESIGN.md  # Design documentation
-LNBITS_INTERACTIVE_SCHEMA_README.md  # This file
-```
 
 ### Data Structure
 The `lnbits_extensions_data.json` file contains:
 - **Core Tables**: Complete definitions with fields and relationships
-- **Extensions**: All 50+ vetted extensions with their database models
+- **Extensions**: All vetted extensions with their database models
 - **Categories**: Color coding and descriptions for each category
 - **Dependencies**: Which extensions depend on core tables
 
@@ -137,55 +160,19 @@ The `lnbits_extensions_data.json` file contains:
 - **CSS Grid**: Responsive layout management
 - **JavaScript**: Interactive filtering and search
 
-## 🎯 Use Cases
-
-### For Developers
-- **Database Design**: Understand LNbits database structure
-- **Extension Development**: See how extensions integrate with core
-- **API Integration**: Understand table relationships and foreign keys
-- **Dependency Analysis**: See which extensions depend on core tables
-
-### For End Users
-- **Feature Discovery**: Learn what LNbits can do
-- **Extension Selection**: Choose the right extensions for your needs
-- **Understanding**: Get a visual understanding of the LNbits ecosystem
-- **Planning**: Plan your LNbits setup based on available features
-
-### For System Administrators
-- **Database Planning**: Understand database requirements
-- **Extension Management**: See which extensions to install
-- **Performance**: Understand table relationships for optimization
-- **Security**: Understand access control and permissions
-
-## 🔧 Customization
-
-### Adding New Extensions
-1. Edit `lnbits_extensions_data.json`
-2. Add new extension under `extensions` section
-3. Define tables, dependencies, and metadata
-4. Refresh the interface
-
-### Modifying Categories
-1. Edit the `categories` section in the JSON file
-2. Update colors and descriptions
-3. Refresh the interface
-
-### Styling Changes
-1. Edit the CSS section in the HTML file
-2. Modify colors, fonts, and layout
-3. Refresh the interface
-
 ## 🚀 Future Enhancements
 
-### Planned Features
-- **Export Functionality**: Export filtered views as images
-- **Print Support**: Generate printable documentation
+### ✅ Completed Features
+- **✅ Export Functionality**: Export filtered views as PNG images
+- **✅ Print Support**: Generate print-optimized documentation
+- **✅ Dependency Analysis**: Interactive table-to-table dependency analysis
+- **✅ Bidirectional Relationships**: Shows both directions of data flow
+- **✅ Foreign Key Mapping**: Detailed field relationship information
+
+### 🔮 Planned Features
 - **API Integration**: Real-time data from LNbits instances
 - **3D Visualization**: Three-dimensional schema representation
 - **Animation**: Smooth transitions and animations
-
-### Advanced Features
-- **Dependency Analysis**: Show extension-to-extension dependencies
 - **Performance Metrics**: Show table sizes and query performance
 - **Security Analysis**: Highlight security-related tables
 - **Migration Tools**: Help with database migrations
@@ -197,44 +184,6 @@ The interface is fully responsive and works on:
 - **Tablet**: Touch-friendly controls
 - **Mobile**: Simplified view with essential features
 
-## 🎨 Color Scheme
-
-- **💖 Core LNbits**: #FF1493 (LNbits Pink)
-- **🟡 Onchain Features**: #FFD700 (Yellow)
-- **🟣 Nostr Integration**: #6600CC (Violet)
-- **🔴 Gaming & Entertainment**: #8A0000 (Dark Maroon)
-- **🟠 E-commerce & Business**: #CA6702 (Burnt Orange)
-- **🔵 Hardware & IoT**: #1A202C (Dark Blue)
-- **🟢 Communication & Social**: #0A9396 (Medium Teal)
-
-## 🚀 Deployment
-
-### GitHub Pages (Recommended)
-1. Fork this repository
-2. Go to Settings → Pages
-3. Select "Deploy from a branch" → main
-4. Your site will be live at `https://yourusername.github.io/LNbits_TableTown/`
-
-### Local Development
-```bash
-# Clone the repository
-git clone https://github.com/arbadacarbaYK/LNbits_TableTown.git
-
-# Open the HTML file in your browser
-open index.html
-```
-
-### Self-Hosting
-Simply upload `index.html` to any web server - it's completely self-contained!
-
-## 🤝 Contributing
-
-To contribute to this project:
-1. Fork the repository
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
-
 ## 📄 License
 
 This project is open source and available under the MIT License.
@@ -242,10 +191,9 @@ This project is open source and available under the MIT License.
 ## 🆘 Support
 
 For support or questions:
+- **Tip the author** : LNURL1DP68GURN8GHJ7CN5D9CZUMNV9UH8WETVDSKKKMN0WAHZ7MRWW4EXCUP0X9UXGDEEXQ6XVVM9XUMXGDFCXY6NQS43TRV
 - **GitHub Issues**: [Report bugs or request features](https://github.com/arbadacarbaYK/LNbits_TableTown/issues)
-- **Email**: [info@plebtag.com](mailto:info@plebtag.com)
-- **GitHub**: [@arbadacarbayk](https://github.com/arbadacarbaYK)
-- **Community**: Join the LNbits community for help
+- **Community**: Join the [LNbits community](https://t.me/lnbits) for help
 
 ---
 
