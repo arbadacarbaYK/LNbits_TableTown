@@ -8,7 +8,19 @@ LNbits Table Town is an interactive database schema visualization that provides 
 
 **Live Demo**: [https://arbadacarbayk.github.io/LNbits_TableTown/](https://arbadacarbayk.github.io/LNbits_TableTown/)
 
+<img height="250" alt="Screenshot from 2025-09-18 13-47-29" src="https://github.com/user-attachments/assets/22ac3b92-7cf2-4ca1-8bad-0f721d8147ce" />
+
 ## 🚀 Features
+
+You can click a table and all its related ones are highlighted. Clicking a FK shows you its destination link.
+
+<img height="200" alt="Screenshot from 2025-09-18 14-08-20" src="https://github.com/user-attachments/assets/a3b718a0-92e3-4010-9221-4e8bfd66370b" />
+ <img height="200" alt="Screenshot from 2025-09-18 14-05-56" src="https://github.com/user-attachments/assets/293dcfd3-18c9-41f7-8321-03f89c005b1b" />
+
+A comprehensive legend will explain all abbreviations and types used with an example where useful.
+
+<img height="250" alt="Screenshot from 2025-09-18 14-06-09" src="https://github.com/user-attachments/assets/0841023d-b93f-41f5-b56c-76e2e7f5f259" />
+
 
 ### 🎮 Interactive Interface
 - **Zoomable & Pannable**: Navigate large schemas with mouse/touch gestures
@@ -25,7 +37,7 @@ LNbits Table Town is an interactive database schema visualization that provides 
 - **Highlight System**: Click to highlight dependencies
 
 ### 📊 Comprehensive Data
-- **50+ Extensions**: Complete database models for all vetted extensions
+- **All Extensions**: Complete database models for all vetted extensions
 - **Table Definitions**: Fields, relationships, and descriptions
 - **Dependency Mapping**: Shows which extensions depend on core tables
 - **GitHub Links**: Direct links to extension repositories
