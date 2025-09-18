@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LNbits Table Town - Interactive Database Explorer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            color: #e0e0e0;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search-container::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            border: 2px solid #888;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .search-container::after {
+            content: '';
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+            width: 2px;
+            height: 6px;
+            background: #888;
+            z-index: 1;
+        }
+
+        .search-box {
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border: 2px solid #444;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            min-width: 200px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #666;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .search-clear:hover {
+            background: #888;
+        }
+
+        .category-bubble {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .credits {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .credits a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .credits a:hover {
+            color: #ffffff;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #444;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            background: #2a2a2a;
+        }
+
+        .filter-btn.active {
+            background: #2a2a2a;
+            color: #ffffff;
+            border-width: 3px;
+            border-color: #ffffff;
+        }
+
+
+        .main-container {
+            margin-top: 200px;
+            height: calc(100vh - 200px);
+            position: relative;
+        }
+
+        .schema-container {
+            width: 100%;
+            height: 100%;
+            background: #1a1a1a;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            font-size: 0.8rem;
+            z-index: 100;
+            border: 1px solid #444;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+        
+        
+        .constraint-explanations,
+        .datatype-explanations,
+        .field-examples {
+            margin-bottom: 1rem;
+        }
+        
+        .constraint-item,
+        .datatype-item,
+        .example-item {
+            margin-bottom: 0.25rem;
+            color: #ccc;
+        }
+        
+        .constraint-item strong,
+        .datatype-item strong,
+        .example-item strong {
+            color: #fff;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip h3 {
+            color: #4CAF50;
+            margin-bottom: 0.5rem;
+        }
+
+        .tooltip p {
+            margin-bottom: 0.3rem;
+        }
+
+        .tooltip .technical {
+            color: #FFC107;
+        }
+
+        .tooltip .user-friendly {
+            color: #81C784;
+        }
+
+        .tooltip .category {
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .tooltip .fields-section {
+            margin: 0.5rem 0;
+        }
+
+        .tooltip .fields-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-top: 0.3rem;
+        }
+
+        .tooltip .field {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+
+        .tooltip .field-more {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        .tooltip a {
+            color: #4CAF50 !important;
+            text-decoration: none;
+        }
+
+        .tooltip a:hover {
+            text-decoration: underline;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 100;
+        }
+        
+        .legend-explanations {
+            position: absolute;
+            bottom: 60px;
+            right: 20px;
+            width: 450px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            color: #ffffff;
+            font-size: 13px;
+            z-index: 1000;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+        }
+        
+        .legend-explanations h4 {
+            margin: 0 0 10px 0;
+            color: #00ff00;
+            font-size: 14px;
+        }
+        
+        .legend-item {
+            display: flex;
+            margin-bottom: 8px;
+            align-items: flex-start;
+        }
+        
+        .legend-abbrev {
+            background: #333;
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 8px;
+            min-width: 30px;
+            text-align: center;
+            font-size: 10px;
+        }
+        
+        .legend-explanations small {
+            color: #aaa;
+            font-size: 10px;
+            font-style: italic;
+            display: block;
+            margin-top: 2px;
+        }
+        
+        .legend-toggle {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            z-index: 1001;
+            font-size: 12px;
+            font-weight: normal;
+            display: block;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+        }
+        
+        .legend-toggle:hover {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+        
+        .legend-toggle::before {
+            content: "⚙";
+            margin-right: 4px;
+            color: #ffffff;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #444;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .zoom-btn:hover {
+            border-color: #667eea;
+            background: #2a2a2a;
+        }
+
+        .stats {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #999;
+            z-index: 100;
+            border: 1px solid #444;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                justify-content: center;
+            }
+            
+            
+            .legend {
+                position: relative;
+                margin: 1rem;
+                top: auto;
+                right: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>LNbits Table Town</h1>
+        <p>Explore LNbits' complete database structure with interactive visualizations. Discover core tables, extension schemas, and relationships across all LNbits modules including Lightning payments, Nostr integration, gaming, e-commerce, and more.</p>
+        <div class="credits">
+            <p>Created by <a href="https://github.com/arbadacarbaYK/LNbits_TableTown" target="_blank">arbadacarbayk</a> | <a href="mailto:info@plebtag.com">info@plebtag.com</a></p>
+        </div>
+        
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="Search tables, extensions..." id="searchInput">
+                <button class="search-clear" id="searchClear" style="display: none;">×</button>
+            </div>
+            
+            <div class="filter-group">
+                <span style="font-weight: bold; color: #666;">Filter by:</span>
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="onchain" style="border-color: #FFD700;"><span class="category-bubble" style="background-color: #FFD700;"></span> Onchain Features</button>
+                <button class="filter-btn" data-filter="nostr" style="border-color: #6600CC;"><span class="category-bubble" style="background-color: #6600CC;"></span> Nostr Integration</button>
+                <button class="filter-btn" data-filter="gaming" style="border-color: #8A0000;"><span class="category-bubble" style="background-color: #8A0000;"></span> Gaming & Entertainment</button>
+                <button class="filter-btn" data-filter="ecommerce" style="border-color: #CA6702;"><span class="category-bubble" style="background-color: #CA6702;"></span> E-commerce & Business</button>
+                <button class="filter-btn" data-filter="hardware" style="border-color: #1A202C;"><span class="category-bubble" style="background-color: #1A202C;"></span> Hardware & IoT</button>
+                <button class="filter-btn" data-filter="communication" style="border-color: #0A9396;"><span class="category-bubble" style="background-color: #0A9396;"></span> Communication & Social</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="schema-container" id="schemaContainer">
+            <svg id="schemaSvg"></svg>
+        </div>
+        
+        <!-- Right legend removed as requested -->
+        
+        
+        
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomIn">+</button>
+            <button class="zoom-btn" id="zoomOut">-</button>
+            <button class="zoom-btn" id="resetZoom">⌂</button>
+            </div>
+        
+        <!-- Stats removed as requested -->
+        
+        <!-- Left Legend for Field Constraints -->
+        <div class="legend-explanations" id="legend-explanations">
+            <h4>Field Constraints</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">NN</span>
+                <span>NOT NULL - Field cannot be empty<br/><small>Example: id, wallet, amount</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">UQ</span>
+                <span>UNIQUE - Field value must be unique<br/><small>Example: username, email, payment_hash</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">FK</span>
+                <span>FOREIGN KEY - References another table (clickable)<br/><small>Example: wallet → Wallet.id, user → Account.id</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">EXT</span>
+                <span>EXTERNAL ID - External service identifier (not clickable)<br/><small>Example: boltz_id (Boltz service), external_id (SSO)<br/><strong>Note:</strong> EXT fields don't show links like FK fields</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">DEF0</span>
+                <span>DEFAULT 0 - Default value is 0<br/><small>Example: balance_msat, counter, used</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">DEF1</span>
+                <span>DEFAULT 1 - Default value is 1<br/><small>Example: active, enable, access_granted</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">DEFNOW</span>
+                <span>DEFAULT NOW() - Default is current timestamp<br/><small>Example: created_at, updated_at</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">DEFsat</span>
+                <span>DEFAULT 'sat' - Default currency is satoshis<br/><small>Example: currency field</small></span>
+        </div>
+        
+            <h4>Data Types</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">UUID4</span>
+                <span>Universally Unique Identifier (36 chars)<br/><small>Example: 550e8400-e29b-41d4-a716-446655440000</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">TEXT</span>
+                <span>Variable length text string<br/><small>Example: "My Wallet", "alice@example.com"</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">BIGINT</span>
+                <span>Large integer (8 bytes)<br/><small>Example: 1000000 (amount in msat)</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">BOOLEAN</span>
+                <span>True/False value<br/><small>Example: true, false</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">TIMESTAMP</span>
+                <span>Date and time value<br/><small>Example: 2024-01-01 12:00:00</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">JSON</span>
+                <span>JSON data structure<br/><small>Example: {"read": true}, ["relay1", "relay2"]</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">DECIMAL</span>
+                <span>Decimal number with precision<br/><small>Example: 2.5 (multiplier)</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">INTEGER</span>
+                <span>Whole number<br/><small>Example: 18 (GPIO pin), 100 (max_tickets)</small></span>
+            </div>
+            
+            <h4>Key Formats</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">nostr_private_key</span>
+                <span>Nostr keys in hex format<br/><small>Stored as hex, displayed as npub1.../nsec1...</small></span>
+                </div>
+            
+            <h4>Lightning Network Formats</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">BOLT11</span>
+                <span>Lightning invoice format<br/><small>Example: lnbc10u1p...</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">PAYMENT_HASH</span>
+                <span>Lightning payment hash (64 hex chars)<br/><small>Example: a1b2c3...</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">ADMINKEY</span>
+                <span>LNbits admin key (43 chars)<br/><small>Example: admin_...</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">INKEY</span>
+                <span>LNbits invoice key (43 chars)<br/><small>Example: invoice_...</small></span>
+                </div>
+            
+            <h4>Bitcoin Formats</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">PUBKEY</span>
+                <span>Bitcoin public key (66 hex chars)<br/><small>Example: 02a1b2c3...</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">PRIVKEY</span>
+                <span>Bitcoin private key (64 hex chars)<br/><small>Example: L1aW4aubDFB7yfras2S1mN3bqg9nwySY8nkoLmJebSxDf3SfGjZ</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">ADDRESS</span>
+                <span>Bitcoin address (bech32/legacy)<br/><small>Example: bc1q..., 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</small></span>
+            </div>
+            
+            <h4>Other Formats</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">UUID4</span>
+                <span>Universally unique identifier<br/><small>Example: 550e8400-e29b-41d4-a716-446655440000</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">MSAT</span>
+                <span>Millisatoshi (1/1000th of satoshi)<br/><small>Example: 1000000 (1 satoshi)</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">UID</span>
+                <span>NFC card unique identifier<br/><small>Example: 04:12:34:56:78:90:ab</small></span>
+                </div>
+            
+            <h4>New Field Types</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">REAL</span>
+                <span>Floating point number<br/><small>Example: 10.50 (currency_amount), 0.5 (chance)</small></span>
+                </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">FLOAT</span>
+                <span>Decimal number<br/><small>Example: 2.5 (multiplier), 0.01 (haircut)</small></span>
+                </div>
+            
+            <h4>Extension-Specific Formats</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">XPUB</span>
+                <span>Extended public key (111 chars)<br/><small>Example: xpub6... (masterpub in WatchOnly)</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">FINGERPRINT</span>
+                <span>Key fingerprint (8 hex chars)<br/><small>Example: a1b2c3d4</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">ENCRYPTION_KEY</span>
+                <span>32-byte encryption key (64 hex chars)<br/><small>Example: k0, k1, k2 in BoltCards</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">OTP</span>
+                <span>One-time password (32 hex chars)<br/><small>Example: 00000000000000000000000000000000</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">BIP21</span>
+                <span>Bitcoin URI with amount<br/><small>Example: bitcoin:bc1q...?amount=0.001</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">REDEEM_SCRIPT</span>
+                <span>Bitcoin redeem script (hex)<br/><small>Example: 522102... (for Boltz swaps)</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">BLINDING_KEY</span>
+                <span>Liquid blinding key (64 hex chars)<br/><small>Example: a1b2c3... (for Liquid swaps)</small></span>
+        </div>
+        
+            <h4>Webhook & Integration Formats</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">WEBHOOK_HEADERS</span>
+                <span>HTTP headers as JSON<br/><small>Example: {"Authorization":"Bearer token"}</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">WEBHOOK_BODY</span>
+                <span>HTTP body as JSON<br/><small>Example: {"amount":1000,"memo":"Payment"}</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">CUSTOM_CSS</span>
+                <span>CSS styles as JSON<br/><small>Example: {"styles":".custom{color:blue}"}</small></span>
+        </div>
+        
+            <h4>Gaming & Statistics</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">COUNTER</span>
+                <span>Usage counter (integer)<br/><small>Example: 0, 1, 2... (card taps, bets)</small></span>
+        </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">HAIRCUT</span>
+                <span>House edge percentage<br/><small>Example: 0.01 (1% house edge)</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">CHANCE</span>
+                <span>Win probability (0.0-1.0)<br/><small>Example: 0.5 (50% chance to win)</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">MULTIPLIER</span>
+                <span>Payout multiplier<br/><small>Example: 2.0 (2x payout)</small></span>
+            </div>
+            
+            <h4>Network & Protocol</h4>
+            <div class="legend-item">
+                <span class="legend-abbrev">ASSET</span>
+                <span>Asset pair for swaps<br/><small>Example: BTC/BTC, BTC/L-BTC</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">DIRECTION</span>
+                <span>Swap direction<br/><small>Example: receive, send</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">FEERATE</span>
+                <span>Fee rate preference<br/><small>Example: true/false (use custom fee)</small></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-abbrev">BLOCK_HEIGHT</span>
+                <span>Bitcoin block height<br/><small>Example: 800000 (timeout block)</small></span>
+            </div>
+        </div>
+        
+        <!-- Toggle button for legend -->
+        <button id="toggleLegend" class="legend-toggle">Legend</button>
+    </div>
+
+    <div class="tooltip" id="tooltip" style="display: none;"></div>
+
+    <script>
+        // Load comprehensive data from JSON file (embedded for file:// compatibility)
+        let schemaData = null;
+        let selectedTable = null;
+        let tablePositions = {};
+        let fieldPositions = {};
+        
+        // Embedded full data (keeps all extensions visible even without fetch)
+        const embeddedSchemaData = 
+        
+        {"core":{"name":"Core LNbits","color":"#FF1493","description":"Complete LNbits database schema - all core tables and extension fields","tables":[{"name":"Account","description":"User accounts and authentication","technical":"Primary key: id (UUID4), stores user credentials, permissions, external_id for SSO, extra user data","fields":["id","external_id","username","password_hash","pubkey","email","extra","created_at","updated_at"]},{"name":"Wallet","description":"Lightning wallets for users","technical":"Primary key: id, foreign key: user → Account.id, stores adminkey, inkey, balance, extra wallet data","fields":["id","user","name","adminkey","inkey","deleted","created_at","updated_at","currency","balance_msat","extra"]},{"name":"Payment","description":"Payment transaction records","technical":"Primary key: checking_id, foreign key: wallet_id → Wallet.id, tracks all payments with full metadata","fields":["checking_id","payment_hash","wallet_id","amount","fee","bolt11","fiat_provider","status","memo","expiry","webhook","webhook_status","preimage","tag","extension","time","created_at","updated_at","extra"]},{"name":"AccessControlList","description":"API access control","technical":"Primary key: id, manages API permissions and endpoints","fields":["id","name","endpoints","token_id_list"]},{"name":"UserAcls","description":"User access control lists","technical":"Primary key: id, user-specific permissions and ACLs","fields":["id","access_control_list","updated_at"]},{"name":"TinyURL","description":"URL shortening service","technical":"Primary key: id, manages short URL redirects with access control","fields":["id","url","endless","wallet","time"]},{"name":"WebPushSubscription","description":"Web push notifications","technical":"Foreign key: user → Account.id, manages push notification subscriptions","fields":["endpoint","user","data","host","timestamp"]}]},"extensions":{ "lnurlp": {"name":"Pay Links","category":"ecommerce","color":"#CA6702","description":"Create static payment links and Lightning Addresses","technical":"LNURL-pay implementation with Lightning Address support","tables":[{"name":"PayLink","description":"Static payment links","technical":"Foreign key: wallet → Wallet.id, stores payment link configuration with LNURL-pay support","fields":["id","wallet","description","min","max","served_meta","served_pr","comment_chars","created_at","updated_at","username","zaps","webhook_url","webhook_headers","webhook_body","success_text","success_url","currency","fiat_base_multiplier","disposable","domain"]},{"name":"LnurlpSettings","description":"Extension settings","technical":"Stores Nostr private key for zaps functionality","fields":["nostr_private_key"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/lnurlp"},"withdraw":{"name":"Withdraw Links","category":"ecommerce","color":"#CA6702","description":"Create LNURL withdraw links for users","technical":"LNURL-withdraw implementation for Lightning withdrawals","tables":[{"name":"WithdrawLink","description":"Withdraw link configurations","technical":"Foreign key: wallet → Wallet.id, manages withdrawal links with LNURL-withdraw support","fields":["id","wallet","title","min_withdrawable","max_withdrawable","uses","wait_time","is_unique","unique_hash","k1","open_time","used","usescsv","number","webhook_url","webhook_headers","webhook_body","custom_url","created_at"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/withdraw"},"boltcards":{"name":"Bolt Cards","category":"ecommerce","color":"#CA6702","description":"Self-custody NFC card payments","technical":"NXP NTAG424 Bolt Card implementation with one-time LNURLw","tables":[{"name":"Card","description":"Bolt card configurations","technical":"Foreign key: wallet → Wallet.id, stores card data, encryption keys k0/k1/k2, and settings","fields":["id","wallet","card_name","uid","external_id","counter","tx_limit","daily_limit","enable","k0","k1","k2","prev_k0","prev_k1","prev_k2","otp","time"]},{"name":"Hit","description":"Card usage tracking","technical":"Foreign key: card_id → Card.id, tracks card taps and payments","fields":["id","card_id","ip","spent","useragent","old_ctr","new_ctr","amount","time"]},{"name":"Refund","description":"Card refund tracking","technical":"Foreign key: hit_id → Hit.id, tracks refunds for card payments","fields":["id","hit_id","refund_amount","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/boltcards"},"satspay":{"name":"SatsPay Server","category":"ecommerce","color":"#CA6702","description":"Accept Bitcoin payments on your website or app","technical":"Creates onchain and Lightning invoices for web integration","tables":[{"name":"Charge","description":"Payment charges","technical":"Foreign key: user → Account.id, stores charge configurations with onchain/Lightning support","fields":["id","user","amount","time","timestamp","balance","pending","zeroconf","fasttrack","paid","completelinktext","name","description","onchainwallet","onchainaddress","lnbitswallet","payment_request","payment_hash","webhook","completelink","custom_css","currency","currency_amount","extra"]},{"name":"SatsPayPayment","description":"Payment records","technical":"Links to core Payment table, tracks SatsPay transactions","fields":["id","charge_id","payment_hash","amount","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/satspay"},"boltz":{"name":"Boltz","category":"onchain","color":"#FFD700","description":"Swap between onchain and Lightning payments","technical":"Onchain/offchain swaps with Liquid support","tables":[{"name":"SubmarineSwap","description":"Submarine swap transactions","technical":"Foreign key: wallet → Wallet.id, manages submarine swaps (onchain→Lightning)","fields":["id","wallet","asset","amount","direction","feerate","feerate_value","payment_hash","time","status","refund_privkey","refund_address","boltz_id","expected_amount","timeout_block_height","address","bip21","redeem_script","blinding_key"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/boltz"},"watchonly":{"name":"Onchain Wallet","category":"onchain","color":"#FFD700","description":"Monitor onchain Bitcoin addresses","technical":"Watch-only wallet implementation for onchain monitoring","tables":[{"name":"WalletAccount","description":"Watch-only wallet configurations","technical":"Foreign key: user → Account.id, stores masterpub (xpub), fingerprint, address_no, and metadata","fields":["id","user","masterpub","fingerprint","title","address_no","balance","type","network","meta"]}],"dependencies":["account"],"github":"https://github.com/lnbits/watchonly"},"nostrmarket":{"name":"Nostr Market","category":"nostr","color":"#6600CC","description":"Sell products on Nostr marketplace","technical":"Nostr webshop/marketplace integration with Lightning payments","tables":[{"name":"NostrProduct","description":"Marketplace products","technical":"Foreign key: wallet → Wallet.id, stores product information","fields":["id","wallet","name","description","image","price","nostr_public_key"]},{"name":"NostrOrder","description":"Customer orders","technical":"Links to core Payment table, tracks marketplace orders","fields":["id","product_id","payment_hash","buyer_pubkey","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrmarket"},"nostrrelay":{"name":"Nostr Relay","category":"nostr","color":"#6600CC","description":"Launch your own Nostr relay","technical":"One-click Nostr relay deployment and management","tables":[{"name":"NostrRelay","description":"Relay configurations","technical":"Foreign key: wallet → Wallet.id, manages relay settings","fields":["id","wallet","name","description","public_key","relay_url","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrrelay"},"nostrclient":{"name":"Nostr Client","category":"nostr","color":"#6600CC","description":"Nostr client for extensions","technical":"Nostr event multiplexer and client functionality","tables":[{"name":"NostrClient","description":"Client configurations","technical":"Foreign key: wallet → Wallet.id, stores client settings","fields":["id","wallet","name","public_key","private_key","relays"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrclient"},"nostrnip5":{"name":"Nostr NIP-5","category":"nostr","color":"#6600CC","description":"Verify addresses for Nostr NIP-5","technical":"NIP-5 address verification and management","tables":[{"name":"NostrNip5","description":"NIP-5 address configurations","technical":"Foreign key: wallet → Wallet.id, manages NIP-5 addresses","fields":["id","wallet","name","domain","public_key","verified"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/nostrnip5"},"satsdice":{"name":"Sats Dice","category":"gaming","color":"#8A0000","description":"Play provably fair dice games","technical":"LNURL Satoshi dice implementation with provable fairness","tables":[{"name":"SatsdiceLink","description":"Dice game sessions","technical":"Foreign key: wallet → Wallet.id, manages dice game sessions","fields":["id","wallet","title","min_bet","max_bet","multiplier","haircut","chance","base_url","amount","served_meta","served_pr","disposable","open_time"]},{"name":"SatsDiceBet","description":"Individual bets","technical":"Links to core Payment table, tracks individual bets","fields":["id","game_id","payment_hash","amount","target","roll","won","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/satsdice"},"coinflip":{"name":"Coinflip","category":"gaming","color":"#8A0000","description":"Bet sats on coinflips","technical":"Provably fair coinflip betting system","tables":[{"name":"CoinflipSettings","description":"Coinflip game settings","technical":"Foreign key: wallet_id → Wallet.id, manages coinflip game settings","fields":["id","wallet_id","user_id","max_players","max_bet","enabled","haircut"]},{"name":"Coinflip","description":"Coinflip game sessions","technical":"Foreign key: settings_id → CoinflipSettings.id, manages coinflip games","fields":["id","settings_id","name","number_of_players","buy_in","players","completed","created_at"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/coinflip"},"numbers":{"name":"Numbers","category":"gaming","color":"#8A0000","description":"Block-based numbers game","technical":"A provably fair numbers game powered by Bitcoin block data","tables":[{"name":"NumbersGame","description":"Numbers game sessions","technical":"Foreign key: wallet → Wallet.id, manages numbers games","fields":["id","wallet","name","max_bet","min_bet","active"]},{"name":"NumbersBet","description":"Individual number bets","technical":"Links to core Payment table, tracks number bets","fields":["id","game_id","payment_hash","amount","number","block_hash","won","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/numbers"},"eightball":{"name":"Magic 8ball","category":"gaming","color":"#8A0000","description":"MadBitcoin's Magic Eightball","technical":"Pay sats to get random words/responses","tables":[{"name":"EightballGame","description":"8ball game configurations","technical":"Foreign key: wallet → Wallet.id, manages 8ball games","fields":["id","wallet","name","price","responses","active"]},{"name":"EightballResponse","description":"Individual responses","technical":"Links to core Payment table, tracks 8ball responses","fields":["id","game_id","payment_hash","response","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/eightball"},"events":{"name":"Events","category":"ecommerce","color":"#CA6702","description":"Sell event tickets and manage attendees","technical":"Event ticket sales and registration system","tables":[{"name":"Event","description":"Event information","technical":"Foreign key: wallet → Wallet.id, stores event details","fields":["id","wallet","name","description","start_date","end_date","price","max_tickets"]},{"name":"EventTicket","description":"Ticket sales","technical":"Links to core Payment table, tracks ticket sales","fields":["id","event_id","payment_hash","attendee_name","attendee_email","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/events"},"invoices":{"name":"Invoices","category":"ecommerce","color":"#CA6702","description":"Create invoices for your clients","technical":"Professional invoice creation and management system","tables":[{"name":"Invoice","description":"Invoice configurations","technical":"Foreign key: wallet → Wallet.id, stores invoice details","fields":["id","wallet","name","description","amount","currency","due_date","status"]},{"name":"InvoicePayment","description":"Invoice payments","technical":"Links to core Payment table, tracks invoice payments","fields":["id","invoice_id","payment_hash","amount","status","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/invoices"},"paywall":{"name":"Paywall","category":"ecommerce","color":"#CA6702","description":"Create paywalls for content","technical":"Content paywall system with Lightning payments","tables":[{"name":"Paywall","description":"Paywall configurations","technical":"Foreign key: wallet → Wallet.id, stores paywall settings","fields":["id","wallet","name","description","price","content","active"]},{"name":"PaywallAccess","description":"Paywall access records","technical":"Links to core Payment table, tracks paywall access","fields":["id","paywall_id","payment_hash","access_granted","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/paywall"},"bitcoinswitch":{"name":"Bitcoin Switch","category":"hardware","color":"#1A202C","description":"Control devices with Bitcoin payments","technical":"IoT device control via Lightning payments","tables":[{"name":"BitcoinSwitch","description":"Switch configurations","technical":"Foreign key: wallet → Wallet.id, stores switch settings","fields":["id","wallet","name","description","price","gpio_pin","active"]},{"name":"SwitchAction","description":"Device actions","technical":"Links to core Payment table, tracks switch activations","fields":["id","switch_id","payment_hash","action","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/bitcoinswitch_extension"},"lnurldevice":{"name":"LNURLDevices","category":"hardware","color":"#1A202C","description":"Control IoT devices with LNURL","technical":"Points of sale, ATMs, switches via LNURL","tables":[{"name":"LNURLDevice","description":"Device configurations","technical":"Foreign key: wallet → Wallet.id, stores device settings","fields":["id","wallet","title","device","currency","amount","pin","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/lnurldevice"},"tipjar":{"name":"Tip Jar","category":"communication","color":"#0A9396","description":"Accept Bitcoin donations with messages","technical":"Donation system with message attachments","tables":[{"name":"TipJar","description":"Tip jar configurations","technical":"Foreign key: wallet → Wallet.id, stores tip jar settings","fields":["id","wallet","name","description","amount","webhook_url","active"]},{"name":"Tip","description":"Individual tips","technical":"Links to core Payment table, tracks individual tips","fields":["id","tipjar_id","payment_hash","amount","message","time"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/tipjar"},"streamalerts":{"name":"Stream Alerts","category":"communication","color":"#0A9396","description":"Bitcoin donations in stream alerts","technical":"Streaming platform integration for Bitcoin donations","tables":[{"name":"StreamAlert","description":"Stream alert configurations","technical":"Foreign key: wallet → Wallet.id, stores alert settings","fields":["id","wallet","name","description","amount","platform","webhook_url","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/streamalerts"},"copilot":{"name":"Streamer Copilot","category":"communication","color":"#0A9396","description":"Video tips/animations/webhooks for streamers","technical":"Streaming tools with Lightning payment integration","tables":[{"name":"CopilotAlert","description":"Streamer alert configurations","technical":"Foreign key: wallet → Wallet.id, stores alert settings","fields":["id","wallet","name","description","amount","animation","sound","active"]}],"dependencies":["wallet"],"github":"https://github.com/lnbits/copilot"}},"categories":{"core":{"name":"Core LNbits","color":"#0066CC","description":"Core database tables for LNbits functionality"},"payment":{"name":"Payment Extensions","color":"#00AA44","description":"Extensions for Lightning payment processing"},"onchain":{"name":"Onchain Features","color":"#FF6600","description":"Extensions with Bitcoin onchain functionality"},"nostr":{"name":"Nostr Integration","color":"#6600CC","description":"Extensions integrating with Nostr protocol"},"gaming":{"name":"Gaming & Entertainment","color":"#FFAA00","description":"Gaming and entertainment extensions"},"ecommerce":{"name":"E-commerce & Business","color":"#CC0000","description":"Business and e-commerce extensions"},"hardware":{"name":"Hardware & IoT","color":"#333333","description":"Hardware and IoT device control extensions"},"communication":{"name":"Communication & Social","color":"#8B4513","description":"Communication and social media extensions"}}};
+
+        async function loadSchemaData() {
+            try {
+                // Use embedded data directly for file:// compatibility
+        schemaData = embeddedSchemaData;
+        
+        // Add datatypes to core tables
+        schemaData.core.tables.forEach(table => {
+            if (!table.datatypes) {
+                table.datatypes = table.fields.map(field => {
+                            if (field === 'id' || field === 'checking_id') return 'UUID4';
+                            if (field === 'wallet' || field === 'user' || field === 'wallet_id' || field === 'access_control_list') return 'UUID4';
+                            if (field === 'amount' || field === 'fee' || field === 'balance_msat' || field === 'price') return 'BIGINT';
+                            if (field === 'created_at' || field === 'updated_at' || field === 'time') return 'TIMESTAMP';
+                            if (field === 'deleted' || field === 'active') return 'BOOLEAN';
+                            if (field === 'endpoints' || field === 'token_id_list') return 'JSON';
+                    return 'TEXT';
+                });
+            }
+        });
+        
+        // Add datatypes to extension tables
+        Object.values(schemaData.extensions).forEach(ext => {
+            ext.tables.forEach(table => {
+                if (!table.datatypes) {
+                    table.datatypes = table.fields.map(field => {
+                                if (field === 'id') return 'UUID4';
+                                if (field === 'wallet' || field === 'user') return 'UUID4';
+                                if (field === 'amount' || field === 'price' || field === 'fee') return 'BIGINT';
+                                if (field === 'created_at' || field === 'updated_at' || field === 'time') return 'TIMESTAMP';
+                                if (field === 'active' || field === 'deleted') return 'BOOLEAN';
+                                if (field === 'multiplier') return 'DECIMAL';
+                                if (field === 'max_tickets' || field === 'gpio_pin') return 'INTEGER';
+                        return 'TEXT';
+                    });
+                }
+            });
+        });
+            } catch (e) {
+                console.error('Failed to load schema; using embedded data', e);
+                schemaData = embeddedSchemaData;
+            }
+        }
+        
+        // Note: datatype augmentation is performed after data is loaded in loadSchemaData()
+
+        // Initialize the visualization
+        let svg, g, zoom;
+        let currentFilter = "all";
+        let userHasZoomed = false;
+        let hasInitialFit = false;
+
+        function initializeVisualization() {
+            // Ensure data is loaded, then render
+            if (!schemaData) {
+                loadSchemaData().then(() => {
+                    buildSvgAndRender();
+                });
+            } else {
+                buildSvgAndRender();
+            }
+        }
+
+        function buildSvgAndRender() {
+            
+            const container = document.getElementById('schemaContainer');
+            const containerRect = container.getBoundingClientRect();
+            
+            svg = d3.select("#schemaSvg")
+                .attr("width", containerRect.width)
+                .attr("height", containerRect.height);
+
+            g = svg.append("g");
+
+            // Set up zoom behavior
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 5])
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform);
+                    userHasZoomed = true;
+                });
+
+            svg.call(zoom);
+
+            // Initial render
+            renderSchema();
+            setupSvgClickHandler();
+            // Auto-fit to top rows after first render
+            requestAnimationFrame(() => {
+                fitToTopRows(20);
+                hasInitialFit = true;
+                userHasZoomed = false;
+            });
+        }
+
+        function fitToContent(padding) {
+            if (!g || !svg) return;
+            
+            // Get all table groups
+            const tableGroups = g.selectAll('.table-group').nodes();
+            if (tableGroups.length === 0) return;
+            
+            // Calculate bounding box of all tables
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            
+            tableGroups.forEach(group => {
+                const transform = d3.select(group).attr('transform');
+                if (transform) {
+                    const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+                    if (match) {
+                        const x = parseFloat(match[1]);
+                        const y = parseFloat(match[2]);
+                        
+                        // Get table dimensions
+                        const rect = group.querySelector('rect');
+                        if (rect) {
+                            const width = parseFloat(rect.getAttribute('width'));
+                            const height = parseFloat(rect.getAttribute('height'));
+                            
+                            minX = Math.min(minX, x);
+                            minY = Math.min(minY, y);
+                            maxX = Math.max(maxX, x + width);
+                            maxY = Math.max(maxY, y + height);
+                        }
+                    }
+                }
+            });
+            
+            if (minX === Infinity) return;
+            
+            // Add padding
+            minX -= padding;
+            minY -= padding;
+            maxX += padding;
+            maxY += padding;
+            
+            // Calculate scale and translation
+            const svgWidth = svg.attr('width');
+            const svgHeight = svg.attr('height');
+            const contentWidth = maxX - minX;
+            const contentHeight = maxY - minY;
+            
+            const scaleX = svgWidth / contentWidth;
+            const scaleY = svgHeight / contentHeight;
+            const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 1
+            
+            const translateX = (svgWidth - contentWidth * scale) / 2 - minX * scale;
+            const translateY = (svgHeight - contentHeight * scale) / 2 - minY * scale;
+            
+            // Apply transform
+            const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+            svg.transition().duration(750).call(zoom.transform, transform);
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only initialize if not already initialized
+            if (!window.visualizationInitialized) {
+            initializeVisualization();
+                initLegendToggle();
+                window.visualizationInitialized = true;
+            }
+        });
+
+        // Enhanced field information function
+        function highlightSearchTerm(text, searchTerm) {
+            if (!searchTerm) return text;
+            
+            // For SVG text, we can't use HTML markup, so just return the text
+            // The highlighting will be done by changing the text color
+            return text;
+        }
+        
+        function getHighlightedTextColor(searchTerm, text, defaultColor) {
+            if (!searchTerm || !text.toLowerCase().includes(searchTerm.toLowerCase())) {
+                return defaultColor;
+            }
+            // Use different colors based on background
+            if (defaultColor === '#000') {
+                return '#FF6B35'; // Orange-red for white backgrounds (core table headers)
+            } else {
+                return '#FFD700'; // Yellow for dark backgrounds
+            }
+        }
+
+        function getFieldInfo(fieldName, dataType) {
+            const fieldInfo = {
+                // Common field patterns with legend abbreviations
+                'id': { type: 'UUID4', length: '36', example: '550e8400-e29b-41d4-a716-446655440000', constraints: 'NN UQ' },
+                'checking_id': { type: 'UUID4', length: '36', example: '550e8400-e29b-41d4-a716-446655440000', constraints: 'NN UQ' },
+                'wallet': { type: 'UUID4', length: '36', example: '550e8400-e29b-41d4-a716-446655440000', constraints: 'NN FK' },
+                'wallet_id': { type: 'UUID4', length: '36', example: '550e8400-e29b-41d4-a716-446655440000', constraints: 'NN FK' },
+                'user': { type: 'UUID4', length: '36', example: '550e8400-e29b-41d4-a716-446655440000', constraints: 'NN FK' },
+                'username': { type: 'TEXT', length: '50', example: 'alice', constraints: 'NN UQ' },
+                'email': { type: 'TEXT', length: '255', example: 'alice@example.com', constraints: 'UQ' },
+                'password_hash': { type: 'TEXT', length: '255', example: '$2b$12$...', constraints: 'NN' },
+                'pubkey': { type: 'TEXT', length: '66', example: '02a1b2c3...', constraints: 'UQ' },
+                'adminkey': { type: 'TEXT', length: '43', example: 'admin_...', constraints: 'NN UQ' },
+                'inkey': { type: 'TEXT', length: '43', example: 'invoice_...', constraints: 'NN UQ' },
+                'name': { type: 'TEXT', length: '100', example: 'My Wallet', constraints: 'NN' },
+                'amount': { type: 'BIGINT', length: '8', example: '1000', constraints: 'NN' },
+                'balance_msat': { type: 'BIGINT', length: '8', example: '1000000', constraints: 'NN DEF0' },
+                'fee': { type: 'BIGINT', length: '8', example: '10', constraints: 'DEF0' },
+                'payment_hash': { type: 'TEXT', length: '64', example: 'a1b2c3...', constraints: 'UQ' },
+                'bolt11': { type: 'TEXT', length: '1000', example: 'lnbc10u1p...', constraints: 'NN' },
+                'status': { type: 'TEXT', length: '20', example: 'pending', constraints: 'NN' },
+                'memo': { type: 'TEXT', length: '500', example: 'Payment for services', constraints: '' },
+                'description': { type: 'TEXT', length: '500', example: 'Payment description', constraints: '' },
+                'created_at': { type: 'TIMESTAMP', length: '8', example: '2024-01-01 12:00:00', constraints: 'NN DEFNOW' },
+                'updated_at': { type: 'TIMESTAMP', length: '8', example: '2024-01-01 12:00:00', constraints: 'DEFNOW' },
+                'deleted': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEF0' },
+                'active': { type: 'BOOLEAN', length: '1', example: 'true', constraints: 'DEF1' },
+                'currency': { type: 'TEXT', length: '3', example: 'BTC', constraints: 'DEFsat' },
+                'time': { type: 'TIMESTAMP', length: '8', example: '2024-01-01 12:00:00', constraints: 'NN' },
+                'extension': { type: 'TEXT', length: '50', example: 'lnurlp', constraints: 'NN' },
+                'endpoints': { type: 'JSON', length: '1000', example: '{"read": true}', constraints: '' },
+                'token_id_list': { type: 'JSON', length: '1000', example: '["token1", "token2"]', constraints: '' },
+                'access_control_list': { type: 'UUID4', length: '36', example: '550e8400-e29b-41d4-a716-446655440000', constraints: 'NN FK' },
+                // Extension-specific fields
+                'title': { type: 'TEXT', length: '100', example: 'My Payment Link', constraints: 'NN' },
+                'min': { type: 'TEXT', length: '20', example: '1000', constraints: 'NN' },
+                'max': { type: 'TEXT', length: '20', example: '1000000', constraints: 'NN' },
+                'webhook_url': { type: 'TEXT', length: '500', example: 'https://example.com/webhook', constraints: '' },
+                'success_text': { type: 'TEXT', length: '200', example: 'Payment successful!', constraints: '' },
+                'min_withdrawable': { type: 'TEXT', length: '20', example: '1000', constraints: 'NN' },
+                'max_withdrawable': { type: 'TEXT', length: '20', example: '1000000', constraints: 'NN' },
+                'uses': { type: 'TEXT', length: '10', example: '10', constraints: 'NN' },
+                'used': { type: 'TEXT', length: '10', example: '3', constraints: 'DEF0' },
+                'unique_hash': { type: 'TEXT', length: '64', example: 'a1b2c3...', constraints: 'UQ' },
+                'card_name': { type: 'TEXT', length: '50', example: 'My Bolt Card', constraints: 'NN' },
+                'uid': { type: 'TEXT', length: '14', example: '04:12:34:56:78:90:ab', constraints: 'NN UQ' },
+                'counter': { type: 'BIGINT', length: '8', example: '0', constraints: 'DEF0' },
+                'tx_limit': { type: 'BIGINT', length: '8', example: '100000', constraints: 'NN' },
+                'daily_limit': { type: 'BIGINT', length: '8', example: '1000000', constraints: 'NN' },
+                'enable': { type: 'BOOLEAN', length: '1', example: 'true', constraints: 'DEF1' },
+                'onchainwallet': { type: 'TEXT', length: '100', example: 'wallet_id_123', constraints: 'NN' },
+                'lnbitswallet': { type: 'TEXT', length: '100', example: 'wallet_id_456', constraints: 'NN' },
+                'charge_id': { type: 'UUID4', length: '36', example: '550e8400-e29b-41d4-a716-446655440000', constraints: 'NN FK' },
+                'address': { type: 'TEXT', length: '100', example: 'bc1q...', constraints: 'NN' },
+                'expected_amount': { type: 'BIGINT', length: '8', example: '100000', constraints: 'NN' },
+                'refund_privkey': { type: 'TEXT', length: '64', example: 'L1aW4aubDFB7yfras2S1mN3bqg9nwySY8nkoLmJebSxDf3SfGjZ', constraints: 'NN' },
+                'nostr_private_key': { type: 'TEXT', length: '64', example: 'nsec1...', constraints: '' },
+                'nostr_public_key': { type: 'TEXT', length: '66', example: 'npub1...', constraints: 'NN' },
+                'image': { type: 'TEXT', length: '500', example: 'https://example.com/image.jpg', constraints: '' },
+                'buyer_pubkey': { type: 'TEXT', length: '66', example: 'npub1...', constraints: 'NN' },
+                'relay_url': { type: 'TEXT', length: '200', example: 'wss://relay.example.com', constraints: 'NN' },
+                'public_key': { type: 'TEXT', length: '66', example: 'npub1...', constraints: 'NN' },
+                'private_key': { type: 'TEXT', length: '64', example: 'nsec1...', constraints: 'NN' },
+                'relays': { type: 'JSON', length: '1000', example: '["wss://relay1.com", "wss://relay2.com"]', constraints: '' },
+                'domain': { type: 'TEXT', length: '100', example: 'example.com', constraints: 'NN' },
+                'verified': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEF0' },
+                'multiplier': { type: 'DECIMAL', length: '10,2', example: '2.5', constraints: 'NN' },
+                'max_bet': { type: 'BIGINT', length: '8', example: '1000000', constraints: 'NN' },
+                'min_bet': { type: 'BIGINT', length: '8', example: '1000', constraints: 'NN' },
+                'target': { type: 'BIGINT', length: '8', example: '50', constraints: 'NN' },
+                'roll': { type: 'BIGINT', length: '8', example: '75', constraints: 'NN' },
+                'won': { type: 'BOOLEAN', length: '1', example: 'true', constraints: 'NN' },
+                'choice': { type: 'TEXT', length: '10', example: 'heads', constraints: 'NN' },
+                'result': { type: 'TEXT', length: '10', example: 'tails', constraints: 'NN' },
+                'number': { type: 'BIGINT', length: '8', example: '42', constraints: 'NN' },
+                'block_hash': { type: 'TEXT', length: '64', example: '0000000000000000000...', constraints: 'NN' },
+                'responses': { type: 'JSON', length: '1000', example: '["Yes", "No", "Maybe"]', constraints: '' },
+                'response': { type: 'TEXT', length: '100', example: 'Yes', constraints: 'NN' },
+                'start_date': { type: 'TIMESTAMP', length: '8', example: '2024-01-01 12:00:00', constraints: 'NN' },
+                'end_date': { type: 'TIMESTAMP', length: '8', example: '2024-01-02 12:00:00', constraints: 'NN' },
+                'max_tickets': { type: 'INTEGER', length: '4', example: '100', constraints: 'NN' },
+                'attendee_name': { type: 'TEXT', length: '100', example: 'John Doe', constraints: 'NN' },
+                'attendee_email': { type: 'TEXT', length: '255', example: 'john@example.com', constraints: 'NN' },
+                'due_date': { type: 'TIMESTAMP', length: '8', example: '2024-01-15 23:59:59', constraints: 'NN' },
+                'content': { type: 'TEXT', length: '5000', example: 'Premium content here...', constraints: '' },
+                'access_granted': { type: 'BOOLEAN', length: '1', example: 'true', constraints: 'DEF1' },
+                'gpio_pin': { type: 'INTEGER', length: '4', example: '18', constraints: 'NN' },
+                'action': { type: 'TEXT', length: '20', example: 'toggle', constraints: 'NN' },
+                'device': { type: 'TEXT', length: '50', example: 'switch', constraints: 'NN' },
+                'pin': { type: 'TEXT', length: '10', example: '1234', constraints: 'NN' },
+                'message': { type: 'TEXT', length: '500', example: 'Thanks for the tip!', constraints: '' },
+                'platform': { type: 'TEXT', length: '50', example: 'twitch', constraints: 'NN' },
+                'animation': { type: 'TEXT', length: '100', example: 'rainbow', constraints: '' },
+                'sound': { type: 'TEXT', length: '100', example: 'notification.mp3', constraints: '' },
+                
+                // Core model extra fields
+                'extra': { type: 'JSON', length: '2000', example: '{"icon":"flash_on","color":"primary"}', constraints: '' },
+                'fiat_provider': { type: 'TEXT', length: '50', example: 'coingecko', constraints: '' },
+                'expiry': { type: 'TIMESTAMP', length: '8', example: '2024-01-15 10:30:00', constraints: '' },
+                'webhook_status': { type: 'TEXT', length: '20', example: 'pending', constraints: '' },
+                'preimage': { type: 'TEXT', length: '64', example: 'a1b2c3...', constraints: '' },
+                'tag': { type: 'TEXT', length: '50', example: 'payment', constraints: '' },
+                
+                // WatchOnly extension fields (actual repository fields)
+                'masterpub': { type: 'TEXT', length: '111', example: 'xpub6...', constraints: 'NN' },
+                'fingerprint': { type: 'TEXT', length: '8', example: 'a1b2c3d4', constraints: '' },
+                'address_no': { type: 'INTEGER', length: '4', example: '0', constraints: 'NN DEF0' },
+                'type': { type: 'TEXT', length: '20', example: 'watch-only', constraints: '' },
+                'network': { type: 'TEXT', length: '10', example: 'Mainnet', constraints: 'NN DEFMainnet' },
+                'meta': { type: 'JSON', length: '1000', example: '{"version":"1.0"}', constraints: '' },
+                
+                // BoltCard extension fields (actual repository fields)
+                'external_id': { type: 'TEXT', length: '50', example: 'ext_123', constraints: 'EXT' },
+                'k0': { type: 'TEXT', length: '32', example: '00000000000000000000000000000000', constraints: 'NN' },
+                'k1': { type: 'TEXT', length: '32', example: '00000000000000000000000000000000', constraints: 'NN' },
+                'k2': { type: 'TEXT', length: '32', example: '00000000000000000000000000000000', constraints: 'NN' },
+                'prev_k0': { type: 'TEXT', length: '32', example: '00000000000000000000000000000000', constraints: 'NN' },
+                'prev_k1': { type: 'TEXT', length: '32', example: '00000000000000000000000000000000', constraints: 'NN' },
+                'prev_k2': { type: 'TEXT', length: '32', example: '00000000000000000000000000000000', constraints: 'NN' },
+                'otp': { type: 'TEXT', length: '32', example: '00000000000000000000000000000000', constraints: 'NN' },
+                
+                // LNURL-pay extension fields
+                'served_meta': { type: 'INTEGER', length: '8', example: '0', constraints: 'NN DEF0' },
+                'served_pr': { type: 'INTEGER', length: '8', example: '0', constraints: 'NN DEF0' },
+                'comment_chars': { type: 'INTEGER', length: '3', example: '0', constraints: 'NN DEF0' },
+                'zaps': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                'webhook_headers': { type: 'TEXT', length: '500', example: '{"Authorization":"Bearer token"}', constraints: '' },
+                'webhook_body': { type: 'TEXT', length: '1000', example: '{"amount":1000,"memo":"Payment"}', constraints: '' },
+                'success_url': { type: 'TEXT', length: '200', example: 'https://example.com/success', constraints: '' },
+                'fiat_base_multiplier': { type: 'INTEGER', length: '6', example: '100', constraints: 'DEF100' },
+                'disposable': { type: 'BOOLEAN', length: '1', example: 'true', constraints: 'DEFtrue' },
+                'domain': { type: 'TEXT', length: '100', example: 'example.com', constraints: '' },
+                
+                // Withdraw extension fields
+                'wait_time': { type: 'INTEGER', length: '4', example: '60', constraints: 'NN' },
+                'is_unique': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                'k1': { type: 'TEXT', length: '64', example: 'a1b2c3d4...', constraints: '' },
+                'open_time': { type: 'INTEGER', length: '8', example: '1640995200', constraints: 'NN' },
+                'usescsv': { type: 'TEXT', length: '1000', example: 'user1,user2,user3', constraints: '' },
+                'number': { type: 'INTEGER', length: '4', example: '0', constraints: 'DEF0' },
+                'custom_url': { type: 'TEXT', length: '200', example: 'https://example.com/custom', constraints: '' },
+                
+                // SatsPay extension fields
+                'time': { type: 'INTEGER', length: '8', example: '3600', constraints: 'NN' },
+                'timestamp': { type: 'TIMESTAMP', length: '8', example: '2024-01-15 10:30:00', constraints: 'NN' },
+                'balance': { type: 'INTEGER', length: '8', example: '0', constraints: 'NN DEF0' },
+                'pending': { type: 'INTEGER', length: '8', example: '0', constraints: 'NN DEF0' },
+                'zeroconf': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                'fasttrack': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                'paid': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                'completelinktext': { type: 'TEXT', length: '50', example: 'Back to Site', constraints: 'DEF' },
+                'onchainaddress': { type: 'TEXT', length: '62', example: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', constraints: '' },
+                'payment_request': { type: 'TEXT', length: '1000', example: 'lnbc10n1p...', constraints: '' },
+                'completelink': { type: 'TEXT', length: '200', example: 'https://example.com/complete', constraints: '' },
+                'custom_css': { type: 'TEXT', length: '2000', example: '.custom { color: blue; }', constraints: '' },
+                'currency_amount': { type: 'REAL', length: '10,2', example: '10.50', constraints: '' },
+                
+                // Boltz extension fields
+                'asset': { type: 'TEXT', length: '20', example: 'BTC/BTC', constraints: 'NN DEF"BTC/BTC"' },
+                'direction': { type: 'TEXT', length: '10', example: 'receive', constraints: 'NN DEFreceive' },
+                'feerate': { type: 'BOOLEAN', length: '1', example: 'false', constraints: '' },
+                'feerate_value': { type: 'INTEGER', length: '4', example: '1', constraints: '' },
+                'refund_address': { type: 'TEXT', length: '62', example: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', constraints: 'NN' },
+                'boltz_id': { type: 'TEXT', length: '64', example: 'a1b2c3d4...', constraints: 'NN EXT' },
+                'timeout_block_height': { type: 'INTEGER', length: '8', example: '800000', constraints: 'NN' },
+                'bip21': { type: 'TEXT', length: '200', example: 'bitcoin:bc1q...?amount=0.001', constraints: '' },
+                'redeem_script': { type: 'TEXT', length: '200', example: '522102...', constraints: 'NN' },
+                'blinding_key': { type: 'TEXT', length: '64', example: 'a1b2c3d4...', constraints: '' },
+                
+                // SatsDice extension fields
+                'title': { type: 'TEXT', length: '100', example: 'My Dice Game', constraints: 'NN' },
+                'haircut': { type: 'REAL', length: '5,2', example: '0.01', constraints: 'NN' },
+                'chance': { type: 'REAL', length: '5,2', example: '0.5', constraints: 'NN' },
+                'base_url': { type: 'TEXT', length: '200', example: 'https://example.com', constraints: 'NN' },
+                'open_time': { type: 'INTEGER', length: '8', example: '1640995200', constraints: 'NN' },
+                
+                // Coinflip extension fields
+                'settings_id': { type: 'TEXT', length: '50', example: 'settings_123', constraints: '' },
+                'number_of_players': { type: 'INTEGER', length: '2', example: '0', constraints: 'NN DEF0' },
+                'buy_in': { type: 'INTEGER', length: '8', example: '1000', constraints: 'NN DEF0' },
+                'players': { type: 'TEXT', length: '1000', example: 'player1,player2', constraints: 'DEF""' },
+                'completed': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                'max_players': { type: 'INTEGER', length: '2', example: '5', constraints: 'NN DEF5' },
+                'enabled': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                
+                // BoltCard Hit and Refund fields
+                'card_id': { type: 'TEXT', length: '50', example: 'card_123', constraints: 'NN FK' },
+                'ip': { type: 'TEXT', length: '45', example: '192.168.1.1', constraints: '' },
+                'spent': { type: 'BOOLEAN', length: '1', example: 'false', constraints: 'DEFfalse' },
+                'useragent': { type: 'TEXT', length: '500', example: 'Mozilla/5.0...', constraints: '' },
+                'old_ctr': { type: 'INTEGER', length: '8', example: '0', constraints: 'NN DEF0' },
+                'new_ctr': { type: 'INTEGER', length: '8', example: '1', constraints: 'NN DEF0' },
+                'hit_id': { type: 'TEXT', length: '50', example: 'hit_123', constraints: 'NN FK' },
+                'refund_amount': { type: 'INTEGER', length: '8', example: '1000', constraints: 'NN' }
+            };
+
+            const info = fieldInfo[fieldName] || { type: dataType, length: '?', example: '...', constraints: '' };
+            
+            // Format the display string
+            let display = info.type;
+            if (info.length && info.length !== '?') {
+                display += `(${info.length})`;
+            }
+            if (info.constraints) {
+                display += ` ${info.constraints}`;
+            }
+            
+            return display;
+        }
+        
+        function getJsonStructureTooltip(fieldName) {
+            const jsonStructures = {
+                'extra': '{"icon":"flash_on","color":"primary","theme":"dark"}',
+                'meta': '{"version":"1.0","settings":{"auto_update":true}}',
+                'webhook_headers': '{"Authorization":"Bearer token","Content-Type":"application/json"}',
+                'webhook_body': '{"amount":1000,"memo":"Payment","wallet_id":"abc123"}',
+                'card_data': '{"version":"1.0","name":"My Card","settings":{"auto_reload":true}}',
+                'custom_css': '{"styles":".custom{color:blue}","theme":"dark"}'
+            };
+            
+            return jsonStructures[fieldName] || '{"key":"value","nested":{"data":"example"}}';
+        }
+
+        function estimateTextWidth(text, fontSizePx) {
+            const avg = fontSizePx * 0.6; // rough monospace estimate
+            return text.length * avg;
+        }
+
+        function computeTableWidth(table, minWidth) {
+            const leftFont = 10;
+            const rightFont = 9;
+            let maxLeft = estimateTextWidth('Header', leftFont);
+            let maxRight = 0;
+            table.fields.forEach((field, i) => {
+                // Left side text includes icon and field name
+                const icon = (field === 'id' || field === 'checking_id') ? '🔑 ' : ((field === 'wallet' || field === 'user' || field === 'wallet_id' || field.endsWith('_id') || field === 'access_control_list') ? '🔗 ' : '');
+                const left = estimateTextWidth(icon + field, leftFont);
+                if (left > maxLeft) maxLeft = left;
+                const dtype = (table.datatypes && table.datatypes[i]) ? table.datatypes[i] : 'TEXT';
+                const info = getFieldInfo(field, dtype);
+                const right = estimateTextWidth(info, rightFont);
+                if (right > maxRight) maxRight = right;
+            });
+            return Math.max(minWidth, 30 + maxLeft + 20 + maxRight + 20);
+        }
+
+        function renderSchema() {
+            // Prevent multiple simultaneous renders
+            if (window.isRendering) {
+                console.log('Render already in progress, skipping...');
+                return;
+            }
+            
+            // Check if data is loaded
+            if (!schemaData) {
+                console.log('Schema data not loaded yet, skipping render...');
+                return;
+            }
+            
+            window.isRendering = true;
+            
+            console.log('Starting renderSchema...');
+            
+            // Clear previous content completely - this is critical for preventing duplicates
+            g.selectAll("*").remove();
+            
+            // Clear any existing FK lines
+            clearFkLines();
+            
+            // Clear any existing relationship lines
+            g.selectAll('.core-rel').remove();
+            g.selectAll('.fk-rel').remove();
+            
+            // Clear any existing table groups
+            g.selectAll('.table-group').remove();
+            
+            // Clear any existing tooltips
+            d3.selectAll('.tooltip').remove();
+
+            const width = svg.attr("width");
+            const height = svg.attr("height");
+            const padding = 40; // Padding from edges
+            const availableWidth = width - (padding * 2);
+            const availableHeight = height - (padding * 2);
+
+            let tableCount = 0;
+            let extensionCount = 0;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Reset positions maps
+            tablePositions = {};
+            fieldPositions = {};
+
+            // Get filtered core tables
+            const coreTables = schemaData.core.tables.filter(table => {
+                if (!searchTerm) return true;
+                
+                const matchesTable = table.name.toLowerCase().includes(searchTerm);
+                const matchesFields = table.fields && table.fields.some(field => field.toLowerCase().includes(searchTerm));
+                const matchesDataTypes = table.datatypes && table.datatypes.some(dt => dt.toLowerCase().includes(searchTerm));
+                
+                // Also check field info constraints (NN, UQ, FK, DEFNOW, etc.)
+                const matchesConstraints = table.fields && table.fields.some(field => {
+                    const fieldIndex = table.fields.indexOf(field);
+                    const dataType = (table.datatypes && table.datatypes[fieldIndex]) || "TEXT";
+                    const fieldInfo = getFieldInfo(field, dataType);
+                    return fieldInfo.toLowerCase().includes(searchTerm.toLowerCase());
+                });
+                
+                return matchesTable || matchesFields || matchesDataTypes || matchesConstraints;
+            });
+
+            // Flexible core table layout with individual headlines like extensions
+            if (coreTables.length > 0) {
+                // Use same width as extensions for symmetry
+                const extensionWidth = Math.min(200, (availableWidth - (padding * 2)) / 4 - 20); // Same as extensions
+                const coreTableWidth = extensionWidth; // Match extension width
+                const tablesPerRow = 5; // Fixed to 5 per row like extensions
+                const coreTableSpacing = Math.max(15, (availableWidth - (tablesPerRow * coreTableWidth)) / (tablesPerRow + 1));
+                const coreStartX = padding + coreTableSpacing;
+                const coreY = padding + 30; // Top area for core tables
+                
+                // Calculate actual row heights based on table content (including headlines)
+                const headlineHeight = 30;
+                const headerHeight = 25;
+                const rowHeight = 18;
+                const coreRowHeights = [];
+                for (let i = 0; i < coreTables.length; i += tablesPerRow) {
+                    const rowTables = coreTables.slice(i, i + tablesPerRow);
+                    const maxHeightInRow = Math.max(...rowTables.map(table => headlineHeight + headerHeight + (table.fields.length * rowHeight)));
+                    coreRowHeights.push(maxHeightInRow + 20); // Add spacing between rows
+                }
+                
+            coreTables.forEach((table, i) => {
+                    const row = Math.floor(i / tablesPerRow);
+                    const col = i % tablesPerRow;
+                    const x = coreStartX + (col * (coreTableWidth + coreTableSpacing));
+                    
+                    // Calculate Y position based on cumulative row heights
+                    let y = coreY;
+                    for (let r = 0; r < row; r++) {
+                        y += coreRowHeights[r];
+                    }
+                
+                    // Create core table group with individual headline like extensions
+                const coreGroup = g.append("g")
+                    .attr("class", `core-group ${table.name.toLowerCase()}`)
+                    .attr("transform", `translate(${x}, ${y})`);
+
+                // Individual headline for each core table (like extensions)
+                const headlineWidth = coreTableWidth;
+                const headlineHeight = 30;
+                const headline = coreGroup.append("rect")
+                    .attr("width", headlineWidth)
+                    .attr("height", headlineHeight)
+                    .attr("rx", 5)
+                    .attr("fill", schemaData.core.color)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 1)
+                    .style("opacity", 1)
+                    .style("filter", "drop-shadow(1px 1px 4px rgba(0,0,0,0.3))");
+
+                coreGroup.append("text")
+                    .attr("x", headlineWidth / 2)
+                    .attr("y", 15)
+                    .attr("text-anchor", "middle")
+                    .attr("dominant-baseline", "middle")
+                    .attr("fill", getHighlightedTextColor(searchTerm, "CORE TABLE", "white"))
+                    .attr("font-size", "10px")
+                    .attr("font-weight", "bold")
+                    .text("CORE TABLE");
+
+                // Render table below headline
+                const tableY = 40; // Start position for table below headline
+                const tableGroup = coreGroup.append("g")
+                    .attr("class", `table-group core-table-group core ${table.name.toLowerCase()}`)
+                    .attr("transform", `translate(0, ${tableY})`);
+
+                const tableWidth = Math.min(coreTableWidth, computeTableWidth(table, coreTableWidth));
+                const headerHeight = 25;
+                const rowHeight = 18;
+                const totalHeight = headerHeight + (table.fields.length * rowHeight);
+
+                // Main table rectangle (extension-style: colored header, black body)
+                tableGroup.append("rect")
+                    .attr("width", tableWidth)
+                    .attr("height", totalHeight)
+                    .attr("rx", 4)
+                    .attr("fill", schemaData.core.color)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 1)
+                    .style("opacity", 1.0)
+                    .style("filter", "drop-shadow(1px 1px 2px rgba(0,0,0,0.2))");
+
+                // Table header
+                tableGroup.append("rect")
+                    .attr("width", tableWidth)
+                    .attr("height", headerHeight)
+                    .attr("rx", 4)
+                    .attr("fill", "#fff")
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 1);
+
+                tableGroup.append("text")
+                    .attr("x", tableWidth / 2)
+                    .attr("y", headerHeight / 2)
+                    .attr("text-anchor", "middle")
+                    .attr("dominant-baseline", "middle")
+                    .attr("fill", getHighlightedTextColor(searchTerm, table.name, "#000"))
+                    .attr("font-size", "10px")
+                    .attr("font-weight", "bold")
+                    .text(table.name);
+
+                // Store table position for relationships (accounting for headline)
+                tablePositions[table.name] = {
+                    x: x + tableWidth / 2,
+                    y: y + headlineHeight + headerHeight / 2,
+                    width: tableWidth,
+                    height: totalHeight
+                };
+
+                // Add black background for table body area
+                tableGroup.append("rect")
+                    .attr("width", tableWidth)
+                    .attr("height", table.fields.length * rowHeight)
+                    .attr("y", headerHeight)
+                    .attr("fill", "#000")
+                    .attr("stroke", "#333");
+
+                // Render fields as table rows
+                table.fields.forEach((field, fieldIndex) => {
+                    const fieldY = headerHeight + (fieldIndex * rowHeight);
+
+                    // PK/FK indicators
+                    let pkFkText = "";
+                    let isForeignKey = false;
+                    if (field === "id" || field === "checking_id") {
+                        pkFkText = "🔑"; // Primary key
+                    } else if (field === "wallet" || field === "user" || field === "wallet_id" || field === "access_control_list") {
+                        pkFkText = "🔗"; // Foreign key
+                        isForeignKey = true;
+                    }
+
+                    // Field name with PK/FK indicator
+                        const fieldText = tableGroup.append("text")
+                        .attr("x", 10)
+                        .attr("y", fieldY + rowHeight / 2)
+                        .attr("dominant-baseline", "middle")
+                            .attr("fill", getHighlightedTextColor(searchTerm, pkFkText + " " + field, "#fff"))
+                        .attr("font-size", "10px")
+                        .attr("font-family", "monospace")
+                        .text(pkFkText + " " + field);
+
+                    // Enhanced data type with length and constraints
+                    const dataType = table.datatypes[fieldIndex] || "TEXT";
+                    const fieldInfo = getFieldInfo(field, dataType);
+                    
+                    tableGroup.append("text")
+                        .attr("x", tableWidth - 10)
+                        .attr("y", fieldY + rowHeight / 2)
+                        .attr("text-anchor", "end")
+                        .attr("dominant-baseline", "middle")
+                            .attr("fill", getHighlightedTextColor(searchTerm, fieldInfo, "#00E676"))
+                        .attr("font-size", "9px")
+                        .attr("font-family", "monospace")
+                        .text(fieldInfo);
+
+                        // Record absolute position for this field (accounting for headline)
+                        fieldPositions[`${table.name}.${field}`] = {
+                            x: x + 10,
+                            y: y + headlineHeight + fieldY + rowHeight / 2
+                        };
+
+                        // Tooltip on hover for field
+                        fieldText.on("mousemove", (event) => {
+                            const tooltip = document.getElementById('tooltip');
+                            if (tooltip) {
+                                tooltip.style.display = 'block';
+                                tooltip.style.left = (event.pageX + 12) + 'px';
+                                tooltip.style.top = (event.pageY + 12) + 'px';
+                                const fieldData = getFieldInfo(field, dataType);
+                                const exampleText = fieldData.example ? `<br/>Example: ${fieldData.example}` : '';
+                                tooltip.innerHTML = `<h3>${table.name}.${field}</h3><p class="technical">${fieldInfo}${exampleText}</p>`;
+                            }
+                        }).on("mouseleave", () => {
+                            const tooltip = document.getElementById('tooltip');
+                            if (tooltip) {
+                                tooltip.style.display = 'none';
+                            }
+                        });
+
+                        // Click FK to draw line to PK/table
+                        if (isForeignKey) {
+                            fieldText.style("cursor", "pointer");
+                            fieldText.on("click", (event) => {
+                                event.stopPropagation();
+                                highlightForeignKey(table.name, field);
+                            });
+                        }
+                });
+
+                // Add click handler to core table
+                tableGroup.on("click", function() {
+                        clearFkLines(); // Clear FK lines when clicking on table
+                    highlightDependencies(table.name);
+                });
+
+                tableCount++;
+            });
+            }
+
+            // Get filtered extensions and group by category
+            const extensionData = [];
+            const categoryGroups = {};
+            
+            Object.entries(schemaData.extensions).forEach(([extId, ext]) => {
+                if (currentFilter !== "all" && ext.category !== currentFilter) {
+                    return; // Skip filtered out extensions
+                }
+
+                if (searchTerm) {
+                    // Search in extension name, table names, field names, categories, and descriptions
+                    const matchesExtension = ext.name.toLowerCase().includes(searchTerm) ||
+                                          ext.category.toLowerCase().includes(searchTerm) ||
+                                          ext.description.toLowerCase().includes(searchTerm);
+                    
+                    const matchesTables = ext.tables.some(table => 
+                        table.name.toLowerCase().includes(searchTerm) ||
+                        table.fields.some(field => field.toLowerCase().includes(searchTerm))
+                    );
+                    
+                    // Also check if any field contains the search term (for data types like "TEXT")
+                    const matchesDataTypes = ext.tables.some(table => 
+                        table.datatypes && table.datatypes.some(dt => dt.toLowerCase().includes(searchTerm))
+                    );
+                    
+                    // Also check field info constraints (NN, UQ, FK, DEFNOW, etc.)
+                    const matchesConstraints = ext.tables.some(table => 
+                        table.fields && table.fields.some(field => {
+                            const fieldIndex = table.fields.indexOf(field);
+                            const dataType = (table.datatypes && table.datatypes[fieldIndex]) || "TEXT";
+                            const fieldInfo = getFieldInfo(field, dataType);
+                            return fieldInfo.toLowerCase().includes(searchTerm.toLowerCase());
+                        })
+                    );
+                    
+                    if (!matchesExtension && !matchesTables && !matchesDataTypes && !matchesConstraints) {
+                    return; // Skip if doesn't match search
+                    }
+                }
+
+                // Group by category
+                const category = ext.category || 'other';
+                if (!categoryGroups[category]) {
+                    categoryGroups[category] = [];
+                }
+                categoryGroups[category].push({ extId, ext });
+                extensionCount++;
+            });
+
+            // Flatten grouped extensions for rendering (maintaining category grouping)
+            Object.keys(categoryGroups).forEach(category => {
+                extensionData.push(...categoryGroups[category]);
+            });
+            console.log('Processing extensions:', extensionData.length, 'extensions found');
+            console.log('All extensions:', Object.keys(schemaData.extensions));
+
+            // Flexible extension layout
+            if (extensionData.length > 0) {
+                // Calculate actual core table bottom position (accounting for headlines and rows)
+                let coreBottomY = padding + 30; // coreY position
+                if (coreTables.length > 0) {
+                    const headlineHeight = 30;
+                    const headerHeight = 25;
+                    const rowHeight = 18;
+                    const tablesPerRow = Math.floor(availableWidth / (Math.min(200, (availableWidth - (padding * 2)) / 4 - 20) + 20));
+                    
+                    // Calculate cumulative height of all core rows (including headlines)
+                    let totalCoreHeight = 0;
+                    for (let i = 0; i < coreTables.length; i += tablesPerRow) {
+                        const rowTables = coreTables.slice(i, i + tablesPerRow);
+                        const maxHeightInRow = Math.max(...rowTables.map(table => headlineHeight + headerHeight + (table.fields.length * rowHeight)));
+                        totalCoreHeight += maxHeightInRow + 20; // Add spacing between rows
+                    }
+                    
+                    coreBottomY += totalCoreHeight;
+                }
+                const gap = 30; // Gap between core tables and extensions
+                const extensionAreaY = coreBottomY + gap;
+                const availableExtensionHeight = availableHeight - extensionAreaY - padding;
+                
+                // Calculate optimal columns based on available space
+                const minExtensionWidth = 180; // Minimum width per extension
+                const maxCols = Math.floor(availableWidth / minExtensionWidth);
+                const cols = Math.min(maxCols, 5); // Fixed 5 per row like core tables
+                const rows = Math.ceil(extensionData.length / cols);
+                
+                // Calculate spacing
+                const extensionWidth = Math.min(200, (availableWidth - (padding * 2)) / cols - 20);
+                const extensionHeight = Math.min(200, availableExtensionHeight / rows - 20);
+                const horizontalSpacing = (availableWidth - (cols * extensionWidth)) / (cols + 1);
+                const verticalSpacing = (availableExtensionHeight - (rows * extensionHeight)) / (rows + 1);
+                
+                const startX = padding + horizontalSpacing;
+                const startY = extensionAreaY + verticalSpacing;
+
+                // Calculate actual heights for each extension
+                const extensionHeights = extensionData.map(({ ext }) => {
+                    const headerHeight = 30; // Extension header height
+                    let totalTableHeight = 0;
+                    
+                    // Calculate height for each table in this extension
+                    ext.tables.forEach((table) => {
+                        const tableHeaderHeight = 25;
+                        const tableRowHeight = 18;
+                        const tableHeight = tableHeaderHeight + (table.fields.length * tableRowHeight);
+                        totalTableHeight += tableHeight + 15; // Add spacing between tables
+                    });
+                    
+                    return headerHeight + totalTableHeight + 5; // Add small margin at bottom
+                });
+                
+                // Calculate row heights based on tallest extension in each row
+                const rowHeights = [];
+                let currentY = startY;
+                for (let i = 0; i < extensionData.length; i += cols) {
+                    const rowExtensions = extensionData.slice(i, i + cols);
+                    const maxHeightInRow = Math.max(...rowExtensions.map((_, idx) => extensionHeights[i + idx]));
+                    rowHeights.push({ startY: currentY, height: maxHeightInRow });
+                    currentY += maxHeightInRow + verticalSpacing;
+                }
+
+                console.log('Rendering extensions:', extensionData.length, 'extensions');
+            extensionData.forEach(({ extId, ext }, index) => {
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                    const x = startX + (col * (extensionWidth + horizontalSpacing));
+                    const y = rowHeights[row].startY;
+                    console.log('Rendering extension', index + 1, ':', extId, 'at position', x, y);
+                    
+                    // Use actual calculated height for this extension
+                    const dynamicHeight = extensionHeights[index];
+
+                // Extension group
+                const extGroup = g.append("g")
+                    .attr("class", `extension-group ${extId}`)
+                        .attr("data-extension-id", extId)
+                    .attr("transform", `translate(${x}, ${y})`);
+
+                // Extension header
+                    const headerWidth = extensionWidth;
+                    const extHeader = extGroup.append("rect")
+                        .attr("width", headerWidth)
+                    .attr("height", 30)
+                    .attr("rx", 5)
+                    .attr("fill", ext.color)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 1)
+                    .style("opacity", 1)
+                    .style("filter", "drop-shadow(1px 1px 4px rgba(0,0,0,0.3))");
+
+                extGroup.append("text")
+                        .attr("x", headerWidth / 2)
+                    .attr("y", 15)
+                    .attr("text-anchor", "middle")
+                    .attr("dominant-baseline", "middle")
+                        .attr("fill", getHighlightedTextColor(searchTerm, ext.name, "white"))
+                    .attr("font-size", "10px")
+                    .attr("font-weight", "bold")
+                    .text(ext.name);
+
+                    // Link icon to GitHub if available
+                    if (ext.github) {
+                        extGroup.append("text")
+                            .attr("x", headerWidth - 15)
+                            .attr("y", 15)
+                            .attr("text-anchor", "middle")
+                            .attr("dominant-baseline", "middle")
+                            .attr("fill", "#ffffff")
+                            .attr("font-size", "12px")
+                            .style("cursor", "pointer")
+                            .text("↗")
+                            .on("click", () => window.open(ext.github, '_blank'))
+                            .append("title").text("Open GitHub");
+                    }
+
+                // Render extension tables with actual table format
+                    let cumulativeY = 40; // Start position for first table
+                ext.tables.forEach((table, i) => {
+                        const tableX = 10; // Small margin from extension edge
+                        const tableY = cumulativeY;
+                    
+                    const tableGroup = extGroup.append("g")
+                            .attr("class", `table-group extension-table-group extension ${extId}`)
+                            .attr("data-extension-id", extId)
+                        .attr("transform", `translate(${tableX}, ${tableY})`);
+
+                        const tableWidth = Math.min(extensionWidth - 20, computeTableWidth(table, extensionWidth - 20));
+                    const headerHeight = 25;
+                    const rowHeight = 18;
+                    const totalHeight = headerHeight + (table.fields.length * rowHeight);
+
+                        // Main table rectangle (extension tables: colored header, black body)
+                    tableGroup.append("rect")
+                        .attr("width", tableWidth)
+                        .attr("height", totalHeight)
+                        .attr("rx", 4)
+                        .attr("fill", ext.color)
+                        .attr("stroke", "#fff")
+                        .attr("stroke-width", 1)
+                            .style("opacity", 1.0) // Full opacity for extensions
+                        .style("filter", "drop-shadow(1px 1px 2px rgba(0,0,0,0.2))");
+
+                    // Table header
+                    tableGroup.append("rect")
+                        .attr("width", tableWidth)
+                        .attr("height", headerHeight)
+                        .attr("rx", 4)
+                        .attr("fill", "#fff")
+                        .attr("stroke", "#fff")
+                        .attr("stroke-width", 1);
+
+                    tableGroup.append("text")
+                        .attr("x", tableWidth / 2)
+                        .attr("y", headerHeight / 2)
+                        .attr("text-anchor", "middle")
+                        .attr("dominant-baseline", "middle")
+                            .attr("fill", getHighlightedTextColor(searchTerm, table.name, "#000"))
+                        .attr("font-size", "10px")
+                        .attr("font-weight", "bold")
+                        .text(table.name);
+
+                        // Add black background for table body area
+                        tableGroup.append("rect")
+                            .attr("width", tableWidth)
+                            .attr("height", table.fields.length * rowHeight)
+                            .attr("y", headerHeight)
+                            .attr("fill", "#000")
+                            .attr("stroke", "#333");
+
+                    // Render fields as table rows
+                    table.fields.forEach((field, fieldIndex) => {
+                        const fieldY = headerHeight + (fieldIndex * rowHeight);
+
+                        // PK/FK indicators
+                        let pkFkText = "";
+                            let isForeignKey = false;
+                        if (field === "id") {
+                            pkFkText = "🔑"; // Primary key
+                            } else if (field === "wallet" || field === "user" || field.endsWith('_id') || field === 'payment_hash' || field === 'charge_id') {
+                            pkFkText = "🔗"; // Foreign key
+                                isForeignKey = true;
+                        }
+
+                        // Field name with PK/FK indicator
+                            const fieldText = tableGroup.append("text")
+                            .attr("x", 8)
+                            .attr("y", fieldY + rowHeight / 2)
+                            .attr("dominant-baseline", "middle")
+                                .attr("fill", getHighlightedTextColor(searchTerm, pkFkText + " " + field, "#fff"))
+                            .attr("font-size", "9px")
+                            .attr("font-family", "monospace")
+                            .text(pkFkText + " " + field);
+
+                            // Enhanced data type with length and constraints (same as core tables)
+                        const dataType = table.datatypes[fieldIndex] || "TEXT";
+                            const fieldInfo = getFieldInfo(field, dataType);
+                            
+                        tableGroup.append("text")
+                            .attr("x", tableWidth - 8)
+                            .attr("y", fieldY + rowHeight / 2)
+                            .attr("text-anchor", "end")
+                            .attr("dominant-baseline", "middle")
+                                .attr("fill", getHighlightedTextColor(searchTerm, fieldInfo, "#00E676"))
+                            .attr("font-size", "8px")
+                            .attr("font-family", "monospace")
+                                .text(fieldInfo);
+
+                            // Record absolute position for this field
+                            fieldPositions[`${table.name}.${field}`] = {
+                                x: x + tableX + 8,
+                                y: y + tableY + fieldY + rowHeight / 2
+                            };
+
+                            // Tooltip on hover for field
+                            fieldText.on("mousemove", (event) => {
+                                const tooltip = document.getElementById('tooltip');
+                                if (tooltip) {
+                                    tooltip.style.display = 'block';
+                                    tooltip.style.left = (event.pageX + 12) + 'px';
+                                    tooltip.style.top = (event.pageY + 12) + 'px';
+                                    const fieldData = getFieldInfo(field, dataType);
+                                    const exampleText = fieldData.example ? `<br/>Example: ${fieldData.example}` : '';
+                                    tooltip.innerHTML = `<h3>${table.name}.${field}</h3><p class=\"technical\">${fieldData}${exampleText}</p>`;
+                                }
+                            }).on("mouseleave", () => {
+                                const tooltip = document.getElementById('tooltip');
+                                if (tooltip) {
+                                    tooltip.style.display = 'none';
+                                }
+                            });
+
+                            if (isForeignKey) {
+                                fieldText.style("cursor", "pointer");
+                                fieldText.on("click", (event) => {
+                                    event.stopPropagation();
+                                    highlightForeignKey(table.name, field);
+                                });
+                            }
+                    });
+
+                    tableCount++;
+                        
+                        // Update cumulative Y position for next table
+                        cumulativeY += totalHeight + 15; // Add table height plus spacing
+                    });
+                });
+            }
+
+            // Add click handlers after all extensions are rendered
+            g.selectAll(".extension-group").on("click", function() {
+                const extId = d3.select(this).attr("data-extension-id");
+                if (typeof highlightExtension === 'function') {
+                    highlightExtension(extId);
+                }
+            });
+
+            g.selectAll(".extension-table-group").on("click", function() {
+                clearFkLines(); // Clear FK lines when clicking on table
+                const tableName = d3.select(this).select("text").text() || d3.select(this).select("text").node()?.textContent || "";
+                const extId = d3.select(this).attr("data-extension-id");
+                if (typeof highlightDependencies === 'function' && tableName) {
+                    highlightDependencies(tableName, extId);
+                }
+            });
+
+
+            // Stats removed as requested
+            
+            // Initialize all tables to full opacity
+            initializeTableOpacity();
+            
+            // Reset rendering flag
+            window.isRendering = false;
+            console.log('RenderSchema completed');
+        }
+
+        // Fit the graph content into the visible SVG area and center it
+        function fitToContent(padding = 20) {
+            if (!svg || !g) return;
+            try {
+                const bbox = g.node().getBBox();
+                if (!bbox || bbox.width === 0 || bbox.height === 0) return;
+
+                const container = document.getElementById('schemaContainer');
+                const rect = container.getBoundingClientRect();
+                const cw = rect.width;
+                const ch = rect.height;
+
+                const maxScale = 3; // Reduced max scale for better readability
+                const minScale = 0.2; // Increased min scale
+                const scale = Math.max(minScale, Math.min(maxScale, Math.min(
+                    (cw - padding * 2) / bbox.width,
+                    (ch - padding * 2) / bbox.height
+                )));
+
+                const tx = (cw / 2) - scale * (bbox.x + bbox.width / 2);
+                const ty = (ch / 2) - scale * (bbox.y + bbox.height / 2);
+
+                const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
+                svg.transition().duration(500).call(zoom.transform, transform);
+            } catch (e) {
+                console.warn('fitToContent failed:', e);
+            }
+        }
+
+        function fitToTopRows(padding = 20) {
+            if (!svg || !g) return;
+            try {
+                // Get the full bounding box first
+                const fullBbox = g.node().getBBox();
+                if (!fullBbox || fullBbox.width === 0 || fullBbox.height === 0) {
+                    fitToContent(padding);
+                    return;
+                }
+
+                // Calculate approximate height for core tables + first row of extensions
+                // Core tables: ~2 rows, Extensions: ~1 row (but show more to cut off first extension row)
+                const estimatedRows = 3.5; // Show 3.5 rows to cut off first extension row
+                const estimatedRowHeight = 200; // Approximate height per row
+                const targetHeight = estimatedRows * estimatedRowHeight;
+                
+                // Use full width but limit height to top rows
+                const targetWidth = fullBbox.width;
+                const targetY = fullBbox.y;
+                const targetMaxY = Math.min(fullBbox.y + targetHeight, fullBbox.y + fullBbox.height);
+
+                const container = document.getElementById('schemaContainer');
+                const rect = container.getBoundingClientRect();
+                const cw = rect.width;
+                const ch = rect.height;
+
+                const scale = Math.min(
+                    (cw - padding * 2) / targetWidth,
+                    (ch - padding * 2) / (targetMaxY - targetY)
+                );
+
+                // Center horizontally, position vertically to show top rows
+                const centerX = fullBbox.x + targetWidth / 2;
+                const centerY = targetY + (targetMaxY - targetY) / 2;
+                
+                const tx = (cw / 2) - scale * centerX;
+                const ty = (ch / 2) - scale * centerY;
+
+                const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
+                svg.transition().duration(500).call(zoom.transform, transform);
+            } catch (e) {
+                console.warn('fitToTopRows failed:', e);
+                fitToContent(padding); // Fallback
+            }
+        }
+
+        function highlightDependencies(tableName, extensionId = null) {
+            // Safety check
+            if (!g) {
+                console.log('Debug: g is undefined in highlightDependencies');
+                return;
+            }
+            
+            // Reset all highlights
+            g.selectAll(".table-group").style("opacity", 0.3);
+            g.selectAll("line").style("opacity", 0.1);
+            g.selectAll("polygon").style("opacity", 0.1);
+
+            // Highlight clicked table
+            g.selectAll(`.table-group`).each(function() {
+                const group = d3.select(this);
+                const text = group.select("text");
+                if (text.text() === tableName) {
+                    group.style("opacity", 1);
+                }
+            });
+
+            selectedTable = tableName;
+
+            // Define relationships for highlighting
+            const relationships = {
+                'Account': ['Wallet'],
+                'Wallet': ['Account', 'Payment', 'PayLink', 'WithdrawLink', 'BoltCard', 'SatsPayCharge', 'SatsPayPayment', 'BoltzSwap', 'WatchOnlyWallet', 'NostrProduct', 'NostrOrder', 'NostrRelay', 'NostrClient', 'NostrNip5', 'SatsDiceGame', 'SatsDiceBet', 'CoinflipGame', 'CoinflipBet', 'NumbersGame', 'NumbersBet', 'EightballGame', 'EightballResponse', 'Event', 'EventTicket', 'Invoice', 'InvoicePayment', 'Paywall', 'PaywallAccess', 'BitcoinSwitch', 'SwitchAction', 'LNURLDevice', 'TipJar', 'Tip', 'StreamAlert', 'CopilotAlert'],
+                'Payment': ['Wallet'],
+                'AccessControlList': ['UserAcls'],
+                'UserAcls': ['AccessControlList'],
+                'PayLink': ['Wallet'],
+                'WithdrawLink': ['Wallet'],
+                'BoltCard': ['Wallet'],
+                'SatsPayCharge': ['Wallet'],
+                'SatsPayPayment': ['Wallet'],
+                'BoltzSwap': ['Wallet'],
+                'WatchOnlyWallet': ['Wallet'],
+                'NostrProduct': ['Wallet'],
+                'NostrOrder': ['Wallet'],
+                'NostrRelay': ['Wallet'],
+                'NostrClient': ['Wallet'],
+                'NostrNip5': ['Wallet'],
+                'SatsDiceGame': ['Wallet'],
+                'SatsDiceBet': ['Wallet'],
+                'CoinflipGame': ['Wallet'],
+                'CoinflipBet': ['Wallet'],
+                'NumbersGame': ['Wallet'],
+                'NumbersBet': ['Wallet'],
+                'EightballGame': ['Wallet'],
+                'EightballResponse': ['Wallet'],
+                'Event': ['Wallet'],
+                'EventTicket': ['Wallet'],
+                'Invoice': ['Wallet'],
+                'InvoicePayment': ['Wallet'],
+                'Paywall': ['Wallet'],
+                'PaywallAccess': ['Wallet'],
+                'BitcoinSwitch': ['Wallet'],
+                'SwitchAction': ['Wallet'],
+                'LNURLDevice': ['Wallet'],
+                'TipJar': ['Wallet'],
+                'Tip': ['Wallet'],
+                'StreamAlert': ['Wallet'],
+                'CopilotAlert': ['Wallet']
+            };
+
+            // Highlight related tables
+            const relatedTables = relationships[tableName] || [];
+            relatedTables.forEach(relatedTable => {
+                g.selectAll(`.table-group`).each(function() {
+                    const group = d3.select(this);
+                    const text = group.select("text");
+                    if (text.text() === relatedTable) {
+                        group.style("opacity", 0.8);
+                    }
+                });
+            });
+
+            // Highlight relationship lines
+            g.selectAll("line").style("opacity", function() {
+                const line = d3.select(this);
+                // Simple heuristic: if line connects to highlighted tables, make it visible
+                return 0.7;
+            });
+        }
+
+        function highlightExtension(extensionId) {
+            // Reset all highlights
+            g.selectAll(".table-group").style("opacity", 0.3);
+            g.selectAll("line").style("opacity", 0.1);
+
+            // Highlight the selected extension tables
+            g.selectAll(`.extension-group.${extensionId} .table-group`).style("opacity", 1);
+            
+            // Find dependent extensions and highlight them
+            const extensionDependencies = {
+                'satsPay': ['boltCards', 'payLinks'],
+                'boltCards': ['payLinks'],
+                'payLinks': ['boltCards'],
+                'withdrawLinks': ['payLinks'],
+                'events': ['payLinks'],
+                'magic8ball': ['payLinks'],
+                'nostr': ['payLinks'],
+                'boltz': ['payLinks']
+            };
+            
+            const dependentExtensions = extensionDependencies[extensionId] || [];
+            
+            // Highlight dependent extensions
+            dependentExtensions.forEach(depId => {
+                g.selectAll(`.extension-group.${depId} .table-group`).style("opacity", 1);
+            });
+
+            // Highlight dependency lines
+            g.selectAll("line").style("opacity", 0.6);
+        }
+
+        function mapForeignKeyToTable(fieldName) {
+            const directMap = {
+                'wallet': 'Wallet',
+                'wallet_id': 'Wallet',
+                'user': 'Account',
+                'access_control_list': 'AccessControlList',
+                'payment_hash': 'Payment',
+                'invoice_id': 'Invoice',
+                'event_id': 'Event',
+                'paywall_id': 'Paywall',
+                'switch_id': 'BitcoinSwitch',
+                'tipjar_id': 'TipJar',
+                'product_id': 'NostrProduct',
+                'charge_id': 'SatsPayCharge',
+                'game_id': 'SatsDiceGame'
+            };
+            if (directMap[fieldName]) return directMap[fieldName];
+            if (fieldName.endsWith('_id')) {
+                const base = fieldName.replace(/_id$/, '');
+                // Try to find a table with matching name (case-insensitive)
+                const allTables = [
+                    ...schemaData.core.tables.map(t => t.name),
+                    ...Object.values(schemaData.extensions).flatMap(ext => ext.tables.map(t => t.name))
+                ];
+                const found = allTables.find(t => t.toLowerCase() === base.toLowerCase());
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function clearFkLines() {
+            g.selectAll('.fk-rel').remove();
+        }
+
+        function highlightForeignKey(tableName, fieldName) {
+            clearFkLines();
+            const source = fieldPositions[`${tableName}.${fieldName}`];
+            const targetTableName = mapForeignKeyToTable(fieldName);
+            if (!source || !targetTableName) return;
+            
+            // Find the primary key field in the target table
+            let targetField = null;
+            const targetTable = schemaData.core.tables.find(t => t.name === targetTableName) ||
+                               schemaData.extensions.flatMap(ext => ext.ext.tables).find(t => t.name === targetTableName);
+            
+            if (targetTable && targetTable.fields) {
+                const pkField = targetTable.fields.find(field => field.pk);
+                if (pkField) {
+                    targetField = fieldPositions[`${targetTableName}.${pkField.name}`];
+                }
+            }
+            
+            // If no specific PK field found, use table center
+            const target = targetField || tablePositions[targetTableName];
+            if (!target) return;
+
+            const toX = target.x;
+            const toY = target.y;
+
+            g.append('line')
+                .attr('x1', source.x)
+                .attr('y1', source.y)
+                .attr('x2', toX)
+                .attr('y2', toY)
+                .attr('stroke', '#00FF00')
+                .attr('stroke-width', 2)
+                .attr('stroke-dasharray', '5,5')
+                .attr('class', 'fk-rel');
+        }
+
+        function showTableDetails(table, type, extension = null) {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 2000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: #1a1a1a;
+                border: 1px solid #444;
+                border-radius: 10px;
+                padding: 2rem;
+                max-width: 80%;
+                max-height: 80%;
+                overflow-y: auto;
+                color: #e0e0e0;
+            `;
+
+            let fieldsTable = '';
+            if (table.fields && table.fields.length > 0) {
+                fieldsTable = `
+                    <h3>Table Fields</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="background: #333;">
+                                <th style="padding: 0.5rem; border: 1px solid #444; text-align: left;">Field Name</th>
+                                <th style="padding: 0.5rem; border: 1px solid #444; text-align: left;">Data Type</th>
+                                <th style="padding: 0.5rem; border: 1px solid #444; text-align: left;">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${table.fields.map((field, i) => `
+                                <tr style="background: ${i % 2 === 0 ? '#2a2a2a' : '#1a1a1a'};">
+                                    <td style="padding: 0.5rem; border: 1px solid #444; font-family: monospace;">${field}</td>
+                                    <td style="padding: 0.5rem; border: 1px solid #444; color: #4CAF50; font-family: monospace;">${table.datatypes[i] || 'TEXT'}</td>
+                                    <td style="padding: 0.5rem; border: 1px solid #444;">${getFieldDescription(field, table.name)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            let extensionInfo = '';
+            if (extension) {
+                extensionInfo = `
+                    <div style="margin-top: 1rem; padding: 1rem; background: #2a2a2a; border-radius: 5px;">
+                        <h4>Extension Information</h4>
+                        <p><strong>Name:</strong> ${extension.name}</p>
+                        <p><strong>Category:</strong> ${extension.category}</p>
+                        <p><strong>Description:</strong> ${extension.description}</p>
+                        <p><strong>Technical:</strong> ${extension.technical}</p>
+                        ${extension.github ? `<p><strong>GitHub:</strong> <a href="${extension.github}" target="_blank" style="color: #4CAF50;">${extension.github}</a></p>` : ''}
+                    </div>
+                `;
+            }
+
+            modalContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2 style="color: #667eea; margin: 0;">${table.name}</h2>
+                    <button onclick="this.closest('.modal-overlay').remove()" style="background: #dc3545; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">Close</button>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <p><strong>Type:</strong> ${type === 'core' ? 'Core LNbits Table' : 'Extension Table'}</p>
+                    <p><strong>Description:</strong> ${table.description}</p>
+                    <p><strong>Technical Details:</strong> ${table.technical}</p>
+                </div>
+
+                ${fieldsTable}
+                ${extensionInfo}
+            `;
+
+            modal.className = 'modal-overlay';
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+
+            // Close on click outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function getFieldDescription(fieldName, tableName) {
+            const descriptions = {
+                'id': 'Primary key identifier',
+                'wallet': 'Foreign key reference to Wallet table',
+                'user': 'Foreign key reference to Account table',
+                'payment_hash': 'Lightning payment hash',
+                'amount': 'Amount in millisatoshis',
+                'fee': 'Transaction fee in millisatoshis',
+                'bolt11': 'Lightning invoice (BOLT11)',
+                'status': 'Payment status',
+                'memo': 'Payment memo/description',
+                'time': 'Timestamp of the event',
+                'created_at': 'Record creation timestamp',
+                'updated_at': 'Record last update timestamp',
+                'active': 'Whether the record is active',
+                'name': 'Display name',
+                'description': 'Description text',
+                'price': 'Price in millisatoshis',
+                'currency': 'Currency code',
+                'webhook_url': 'Webhook URL for notifications',
+                'username': 'Username for Lightning Address',
+                'min': 'Minimum payment amount',
+                'max': 'Maximum payment amount'
+            };
+            return descriptions[fieldName] || 'Field description not available';
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
+        }
+
+        // Event listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderSchema();
+                setTimeout(() => fitToContent(20), 0);
+            });
+        });
+
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const clearButton = document.getElementById('searchClear');
+            
+            // Show/hide clear button based on input
+            if (searchTerm.length > 0) {
+                clearButton.style.display = 'flex';
+            } else {
+                clearButton.style.display = 'none';
+            }
+            
+            // Trigger re-render with search filter
+            renderSchema();
+        });
+
+        // Clear button functionality
+        document.getElementById('searchClear').addEventListener('click', function() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = '';
+            this.style.display = 'none';
+            renderSchema();
+        });
+
+        // Zoom controls - use D3's default behavior without custom re-rendering
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            svg.transition().call(zoom.scaleBy, 1.5);
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            svg.transition().call(zoom.scaleBy, 1 / 1.5);
+        });
+
+        document.getElementById('resetZoom').addEventListener('click', function() {
+                fitToContent(20);
+            resetHighlights();
+        });
+
+        function resetHighlights() {
+            g.selectAll(".table-group").style("opacity", 1);
+            g.selectAll("line").style("opacity", 0.6);
+            selectedTable = null;
+            clearFkLines();
+        }
+
+        function initializeTableOpacity() {
+            // Set all tables to full opacity initially
+            g.selectAll(".table-group").style("opacity", 1);
+        }
+
+        function setupSvgClickHandler() {
+        // Add click handler to reset highlights when clicking on empty space
+        svg.on("click", function(event) {
+                // Check if click is on empty space (not on tables or other elements)
+                if (event.target === svg.node() || event.target.tagName === 'svg') {
+                resetHighlights();
+                    clearFkLines(); // Clear FK lines when clicking empty space
+                }
+            });
+        }
+
+
+        // Initialize legend toggle functionality
+        function initLegendToggle() {
+            const toggleBtn = document.getElementById('toggleLegend');
+            const legend = document.getElementById('legend-explanations');
+            
+            if (toggleBtn && legend) {
+                console.log('Legend toggle initialized');
+                toggleBtn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    console.log('Legend button clicked');
+                    
+                    // Force show the legend modal
+                    if (legend.style.display === 'none' || legend.style.display === '') {
+                        legend.style.display = 'block';
+                        legend.style.visibility = 'visible';
+                        legend.style.opacity = '1';
+                        console.log('Legend shown');
+                    } else {
+                        legend.style.display = 'none';
+                        legend.style.visibility = 'hidden';
+                        legend.style.opacity = '0';
+                        console.log('Legend hidden');
+                    }
+                });
+            } else {
+                console.log('Legend elements not found:', {toggleBtn, legend});
+            }
+        }
+
+        // Add global click handler to clear FK lines when clicking anywhere
+        function setupGlobalClickHandler() {
+            document.addEventListener('click', function(event) {
+                // Check if click is not on an interactive element
+                const isInteractiveElement = event.target.closest('.table-group, .extension-group, .legend-toggle, .legend-explanations, button, input, text, svg, .zoom-btn, .tooltip, .modal-overlay, .fk-line');
+                
+                if (!isInteractiveElement) {
+                    clearFkLines();
+                    resetHighlights();
+                }
+            });
+        }
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            // Only initialize if not already initialized
+            if (!window.visualizationInitialized) {
+                initializeVisualization();
+                initLegendToggle();
+                setupGlobalClickHandler();
+                window.visualizationInitialized = true;
+            }
+        });
+        
+        // Debounce resize events to prevent multiple renders
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (!window.isRendering && window.visualizationInitialized) {
+                    const container = document.getElementById('schemaContainer');
+                    const rect = container.getBoundingClientRect();
+                    if (svg) {
+                        svg.attr('width', rect.width).attr('height', rect.height);
+                    }
+                    renderSchema();
+                    fitToContent(20);
+                }
+            }, 250);
+        });
+    </script>
+</body>
+</html>
+
