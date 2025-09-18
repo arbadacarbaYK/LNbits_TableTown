@@ -1,0 +1,529 @@
+{
+  "core": {
+    "name": "Core LNbits",
+    "color": "#0066CC",
+    "description": "Core LNbits database tables",
+    "tables": [
+      {
+        "name": "Account",
+        "description": "User accounts and authentication",
+        "technical": "Primary key: id (UUID4), stores user credentials, permissions, external_id for SSO",
+        "fields": ["id", "external_id", "username", "password_hash", "pubkey", "email", "created_at", "updated_at"]
+      },
+      {
+        "name": "Wallet",
+        "description": "Lightning wallets for users",
+        "technical": "Primary key: id, foreign key: user → Account.id, stores adminkey, inkey, balance",
+        "fields": ["id", "user", "name", "adminkey", "inkey", "deleted", "created_at", "updated_at", "currency", "balance_msat"]
+      },
+      {
+        "name": "Payment",
+        "description": "Payment transaction records",
+        "technical": "Primary key: checking_id, foreign key: wallet_id → Wallet.id, tracks all payments",
+        "fields": ["checking_id", "payment_hash", "wallet_id", "amount", "fee", "bolt11", "status", "memo", "time", "extension"]
+      },
+      {
+        "name": "AccessControlList",
+        "description": "API access control",
+        "technical": "Primary key: id, manages API permissions and endpoints",
+        "fields": ["id", "name", "endpoints", "token_id_list"]
+      },
+      {
+        "name": "UserAcls",
+        "description": "User access control lists",
+        "technical": "Primary key: id, user-specific permissions and ACLs",
+        "fields": ["id", "access_control_list", "updated_at"]
+      }
+    ]
+  },
+  "extensions": {
+    "lnurlp": {
+      "name": "Pay Links",
+      "category": "payment",
+      "color": "#00AA44",
+      "description": "Create static payment links and Lightning Addresses",
+      "technical": "LNURL-pay implementation with Lightning Address support",
+      "tables": [
+        {
+          "name": "PayLink",
+          "description": "Static payment links",
+          "technical": "Foreign key: wallet → Wallet.id, stores payment link configuration",
+          "fields": ["id", "wallet", "description", "min", "max", "username", "webhook_url", "success_text", "currency"]
+        },
+        {
+          "name": "LnurlpSettings",
+          "description": "Extension settings",
+          "technical": "Stores Nostr private key for zaps functionality",
+          "fields": ["nostr_private_key"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/lnurlp"
+    },
+    "withdraw": {
+      "name": "Withdraw Links",
+      "category": "payment",
+      "color": "#00AA44",
+      "description": "Create LNURL withdraw links for users",
+      "technical": "LNURL-withdraw implementation for Lightning withdrawals",
+      "tables": [
+        {
+          "name": "WithdrawLink",
+          "description": "Withdraw link configurations",
+          "technical": "Foreign key: wallet → Wallet.id, manages withdrawal links",
+          "fields": ["id", "wallet", "title", "min_withdrawable", "max_withdrawable", "uses", "used", "unique_hash"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/withdraw"
+    },
+    "boltcards": {
+      "name": "Bolt Cards",
+      "category": "payment",
+      "color": "#00AA44",
+      "description": "Self-custody NFC card payments",
+      "technical": "NXP NTAG424 Bolt Card implementation with one-time LNURLw",
+      "tables": [
+        {
+          "name": "BoltCard",
+          "description": "Bolt card configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores card data and settings",
+          "fields": ["id", "wallet", "card_name", "uid", "counter", "tx_limit", "daily_limit", "enable"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/boltcards"
+    },
+    "satspay": {
+      "name": "SatsPay Server",
+      "category": "onchain",
+      "color": "#FF6600",
+      "description": "Accept Bitcoin payments on your website or app",
+      "technical": "Creates onchain and Lightning invoices for web integration",
+      "tables": [
+        {
+          "name": "SatsPayCharge",
+          "description": "Payment charges",
+          "technical": "Foreign key: wallet → Wallet.id, stores charge configurations",
+          "fields": ["id", "wallet", "description", "onchainwallet", "lnbitswallet", "amount", "webhook_url"]
+        },
+        {
+          "name": "SatsPayPayment",
+          "description": "Payment records",
+          "technical": "Links to core Payment table, tracks SatsPay transactions",
+          "fields": ["id", "charge_id", "payment_hash", "amount", "status", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/satspay"
+    },
+    "boltz": {
+      "name": "Boltz",
+      "category": "onchain",
+      "color": "#FF6600",
+      "description": "Swap between onchain and Lightning payments",
+      "technical": "Onchain/offchain swaps with Liquid support",
+      "tables": [
+        {
+          "name": "BoltzSwap",
+          "description": "Swap transactions",
+          "technical": "Foreign key: wallet → Wallet.id, manages swap operations",
+          "fields": ["id", "wallet", "amount", "address", "expected_amount", "status", "refund_privkey"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/boltz"
+    },
+    "watchonly": {
+      "name": "Onchain Wallet",
+      "category": "onchain",
+      "color": "#FF6600",
+      "description": "Monitor onchain Bitcoin addresses",
+      "technical": "Watch-only wallet implementation for onchain monitoring",
+      "tables": [
+        {
+          "name": "WatchOnlyWallet",
+          "description": "Watch-only wallet configurations",
+          "technical": "Foreign key: user → Account.id, stores address and settings",
+          "fields": ["id", "user", "title", "address", "balance", "created_at"]
+        }
+      ],
+      "dependencies": ["account"],
+      "github": "https://github.com/lnbits/watchonly"
+    },
+    "nostrmarket": {
+      "name": "Nostr Market",
+      "category": "nostr",
+      "color": "#6600CC",
+      "description": "Sell products on Nostr marketplace",
+      "technical": "Nostr webshop/marketplace integration with Lightning payments",
+      "tables": [
+        {
+          "name": "NostrProduct",
+          "description": "Marketplace products",
+          "technical": "Foreign key: wallet → Wallet.id, stores product information",
+          "fields": ["id", "wallet", "name", "description", "image", "price", "nostr_public_key"]
+        },
+        {
+          "name": "NostrOrder",
+          "description": "Customer orders",
+          "technical": "Links to core Payment table, tracks marketplace orders",
+          "fields": ["id", "product_id", "payment_hash", "buyer_pubkey", "status", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/nostrmarket"
+    },
+    "nostrrelay": {
+      "name": "Nostr Relay",
+      "category": "nostr",
+      "color": "#6600CC",
+      "description": "Launch your own Nostr relay",
+      "technical": "One-click Nostr relay deployment and management",
+      "tables": [
+        {
+          "name": "NostrRelay",
+          "description": "Relay configurations",
+          "technical": "Foreign key: wallet → Wallet.id, manages relay settings",
+          "fields": ["id", "wallet", "name", "description", "public_key", "relay_url", "active"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/nostrrelay"
+    },
+    "nostrclient": {
+      "name": "Nostr Client",
+      "category": "nostr",
+      "color": "#6600CC",
+      "description": "Nostr client for extensions",
+      "technical": "Nostr event multiplexer and client functionality",
+      "tables": [
+        {
+          "name": "NostrClient",
+          "description": "Client configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores client settings",
+          "fields": ["id", "wallet", "name", "public_key", "private_key", "relays"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/nostrclient"
+    },
+    "nostrnip5": {
+      "name": "Nostr NIP-5",
+      "category": "nostr",
+      "color": "#6600CC",
+      "description": "Verify addresses for Nostr NIP-5",
+      "technical": "NIP-5 address verification and management",
+      "tables": [
+        {
+          "name": "NostrNip5",
+          "description": "NIP-5 address configurations",
+          "technical": "Foreign key: wallet → Wallet.id, manages NIP-5 addresses",
+          "fields": ["id", "wallet", "name", "domain", "public_key", "verified"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/nostrnip5"
+    },
+    "satsdice": {
+      "name": "Sats Dice",
+      "category": "gaming",
+      "color": "#FFAA00",
+      "description": "Play provably fair dice games",
+      "technical": "LNURL Satoshi dice implementation with provable fairness",
+      "tables": [
+        {
+          "name": "SatsDiceGame",
+          "description": "Dice game sessions",
+          "technical": "Foreign key: wallet → Wallet.id, manages game sessions",
+          "fields": ["id", "wallet", "name", "multiplier", "max_bet", "min_bet", "active"]
+        },
+        {
+          "name": "SatsDiceBet",
+          "description": "Individual bets",
+          "technical": "Links to core Payment table, tracks individual bets",
+          "fields": ["id", "game_id", "payment_hash", "amount", "target", "roll", "won", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/satsdice"
+    },
+    "coinflip": {
+      "name": "Coinflip",
+      "category": "gaming",
+      "color": "#FFAA00",
+      "description": "Bet sats on coinflips",
+      "technical": "Provably fair coinflip betting system",
+      "tables": [
+        {
+          "name": "CoinflipGame",
+          "description": "Coinflip game sessions",
+          "technical": "Foreign key: wallet → Wallet.id, manages coinflip games",
+          "fields": ["id", "wallet", "name", "max_bet", "min_bet", "active"]
+        },
+        {
+          "name": "CoinflipBet",
+          "description": "Individual coinflip bets",
+          "technical": "Links to core Payment table, tracks coinflip bets",
+          "fields": ["id", "game_id", "payment_hash", "amount", "choice", "result", "won", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/coinflip"
+    },
+    "numbers": {
+      "name": "Numbers",
+      "category": "gaming",
+      "color": "#FFAA00",
+      "description": "Block-based numbers game",
+      "technical": "A provably fair numbers game powered by Bitcoin block data",
+      "tables": [
+        {
+          "name": "NumbersGame",
+          "description": "Numbers game sessions",
+          "technical": "Foreign key: wallet → Wallet.id, manages numbers games",
+          "fields": ["id", "wallet", "name", "max_bet", "min_bet", "active"]
+        },
+        {
+          "name": "NumbersBet",
+          "description": "Individual number bets",
+          "technical": "Links to core Payment table, tracks number bets",
+          "fields": ["id", "game_id", "payment_hash", "amount", "number", "block_hash", "won", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/numbers"
+    },
+    "eightball": {
+      "name": "Magic 8ball",
+      "category": "gaming",
+      "color": "#FFAA00",
+      "description": "MadBitcoin's Magic Eightball",
+      "technical": "Pay sats to get random words/responses",
+      "tables": [
+        {
+          "name": "EightballGame",
+          "description": "8ball game configurations",
+          "technical": "Foreign key: wallet → Wallet.id, manages 8ball games",
+          "fields": ["id", "wallet", "name", "price", "responses", "active"]
+        },
+        {
+          "name": "EightballResponse",
+          "description": "Individual responses",
+          "technical": "Links to core Payment table, tracks 8ball responses",
+          "fields": ["id", "game_id", "payment_hash", "response", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/eightball"
+    },
+    "events": {
+      "name": "Events",
+      "category": "ecommerce",
+      "color": "#CC0000",
+      "description": "Sell event tickets and manage attendees",
+      "technical": "Event ticket sales and registration system",
+      "tables": [
+        {
+          "name": "Event",
+          "description": "Event information",
+          "technical": "Foreign key: wallet → Wallet.id, stores event details",
+          "fields": ["id", "wallet", "name", "description", "start_date", "end_date", "price", "max_tickets"]
+        },
+        {
+          "name": "EventTicket",
+          "description": "Ticket sales",
+          "technical": "Links to core Payment table, tracks ticket sales",
+          "fields": ["id", "event_id", "payment_hash", "attendee_name", "attendee_email", "status", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/events"
+    },
+    "invoices": {
+      "name": "Invoices",
+      "category": "ecommerce",
+      "color": "#CC0000",
+      "description": "Create invoices for your clients",
+      "technical": "Professional invoice creation and management system",
+      "tables": [
+        {
+          "name": "Invoice",
+          "description": "Invoice configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores invoice details",
+          "fields": ["id", "wallet", "name", "description", "amount", "currency", "due_date", "status"]
+        },
+        {
+          "name": "InvoicePayment",
+          "description": "Invoice payments",
+          "technical": "Links to core Payment table, tracks invoice payments",
+          "fields": ["id", "invoice_id", "payment_hash", "amount", "status", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/invoices"
+    },
+    "paywall": {
+      "name": "Paywall",
+      "category": "ecommerce",
+      "color": "#CC0000",
+      "description": "Create paywalls for content",
+      "technical": "Content paywall system with Lightning payments",
+      "tables": [
+        {
+          "name": "Paywall",
+          "description": "Paywall configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores paywall settings",
+          "fields": ["id", "wallet", "name", "description", "price", "content", "active"]
+        },
+        {
+          "name": "PaywallAccess",
+          "description": "Paywall access records",
+          "technical": "Links to core Payment table, tracks paywall access",
+          "fields": ["id", "paywall_id", "payment_hash", "access_granted", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/paywall"
+    },
+    "bitcoinswitch": {
+      "name": "Bitcoin Switch",
+      "category": "hardware",
+      "color": "#333333",
+      "description": "Control devices with Bitcoin payments",
+      "technical": "IoT device control via Lightning payments",
+      "tables": [
+        {
+          "name": "BitcoinSwitch",
+          "description": "Switch configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores switch settings",
+          "fields": ["id", "wallet", "name", "description", "price", "gpio_pin", "active"]
+        },
+        {
+          "name": "SwitchAction",
+          "description": "Device actions",
+          "technical": "Links to core Payment table, tracks switch activations",
+          "fields": ["id", "switch_id", "payment_hash", "action", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/bitcoinswitch_extension"
+    },
+    "lnurldevice": {
+      "name": "LNURLDevices",
+      "category": "hardware",
+      "color": "#333333",
+      "description": "Control IoT devices with LNURL",
+      "technical": "Points of sale, ATMs, switches via LNURL",
+      "tables": [
+        {
+          "name": "LNURLDevice",
+          "description": "Device configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores device settings",
+          "fields": ["id", "wallet", "title", "device", "currency", "amount", "pin", "active"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/lnurldevice"
+    },
+    "tipjar": {
+      "name": "Tip Jar",
+      "category": "communication",
+      "color": "#8B4513",
+      "description": "Accept Bitcoin donations with messages",
+      "technical": "Donation system with message attachments",
+      "tables": [
+        {
+          "name": "TipJar",
+          "description": "Tip jar configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores tip jar settings",
+          "fields": ["id", "wallet", "name", "description", "amount", "webhook_url", "active"]
+        },
+        {
+          "name": "Tip",
+          "description": "Individual tips",
+          "technical": "Links to core Payment table, tracks individual tips",
+          "fields": ["id", "tipjar_id", "payment_hash", "amount", "message", "time"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/tipjar"
+    },
+    "streamalerts": {
+      "name": "Stream Alerts",
+      "category": "communication",
+      "color": "#8B4513",
+      "description": "Bitcoin donations in stream alerts",
+      "technical": "Streaming platform integration for Bitcoin donations",
+      "tables": [
+        {
+          "name": "StreamAlert",
+          "description": "Stream alert configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores alert settings",
+          "fields": ["id", "wallet", "name", "description", "amount", "platform", "webhook_url", "active"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/streamalerts"
+    },
+    "copilot": {
+      "name": "Streamer Copilot",
+      "category": "communication",
+      "color": "#8B4513",
+      "description": "Video tips/animations/webhooks for streamers",
+      "technical": "Streaming tools with Lightning payment integration",
+      "tables": [
+        {
+          "name": "CopilotAlert",
+          "description": "Streamer alert configurations",
+          "technical": "Foreign key: wallet → Wallet.id, stores alert settings",
+          "fields": ["id", "wallet", "name", "description", "amount", "animation", "sound", "active"]
+        }
+      ],
+      "dependencies": ["wallet"],
+      "github": "https://github.com/lnbits/copilot"
+    }
+  },
+  "categories": {
+    "core": {
+      "name": "Core LNbits",
+      "color": "#0066CC",
+      "description": "Core database tables for LNbits functionality"
+    },
+    "payment": {
+      "name": "Payment Extensions",
+      "color": "#00AA44",
+      "description": "Extensions for Lightning payment processing"
+    },
+    "onchain": {
+      "name": "Onchain Features",
+      "color": "#FF6600",
+      "description": "Extensions with Bitcoin onchain functionality"
+    },
+    "nostr": {
+      "name": "Nostr Integration",
+      "color": "#6600CC",
+      "description": "Extensions integrating with Nostr protocol"
+    },
+    "gaming": {
+      "name": "Gaming & Entertainment",
+      "color": "#FFAA00",
+      "description": "Gaming and entertainment extensions"
+    },
+    "ecommerce": {
+      "name": "E-commerce & Business",
+      "color": "#CC0000",
+      "description": "Business and e-commerce extensions"
+    },
+    "hardware": {
+      "name": "Hardware & IoT",
+      "color": "#333333",
+      "description": "Hardware and IoT device control extensions"
+    },
+    "communication": {
+      "name": "Communication & Social",
+      "color": "#8B4513",
+      "description": "Communication and social media extensions"
+    }
+  }
+}
