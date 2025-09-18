@@ -12,10 +12,13 @@ LNbits Table Town is an interactive database schema visualization that provides 
 
 ## 🚀 Features
 
-You can click a table and all its related ones are highlighted. Clicking a FK shows you its destination link.
+You can click a table and all its related ones are highlighted. 
 
 <img height="200" alt="Screenshot from 2025-09-18 14-08-20" src="https://github.com/user-attachments/assets/a3b718a0-92e3-4010-9221-4e8bfd66370b" />
- <img height="200" alt="Screenshot from 2025-09-18 14-05-56" src="https://github.com/user-attachments/assets/293dcfd3-18c9-41f7-8321-03f89c005b1b" />
+
+Clicking a FK shows you its destination link.
+
+<img height="200" alt="Screenshot from 2025-09-18 14-05-56" src="https://github.com/user-attachments/assets/293dcfd3-18c9-41f7-8321-03f89c005b1b" />
 
 A comprehensive legend will explain all abbreviations and types used with an example where useful.
 
