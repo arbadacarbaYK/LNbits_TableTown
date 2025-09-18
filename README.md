@@ -36,9 +36,12 @@ Real-time search with highlighted results and category-based filtering.
 <img height="250" alt="Search functionality" src="https://github.com/user-attachments/assets/2dbf583c-cc8b-4980-bb49-9a7b7359d89d" />
 
 ### 📸 Export & Print Features
-- **Export View**: Download current view as PNG image
-- **Print View**: Generate print-optimized documentation
+- **Export View**: Download current view as high-resolution PNG image
+- **Print View**: Generate print-optimized documentation with white backgrounds
 - **SVG Fallback**: Automatic fallback to SVG if PNG export fails
+- **Single-Page Layout**: Mathematical scaling to fit entire schema on one page
+- **Printer-Friendly Colors**: Automatic conversion to white backgrounds and dark text
+- **Ultra-High Resolution**: 4x DPI scaling for crisp, professional quality
 
 
 ### 🎮 Interactive Interface
@@ -141,9 +144,12 @@ open index.html
 - **Click Empty Space**: Reset all highlights and close modal
 
 ### 6. **Export & Print**
-- **Export View**: Click "📸 Export View" to download PNG image
-- **Print View**: Click "🖨️ Print View" for print-optimized documentation
+- **Export View**: Click "📸 Export View" to download high-resolution PNG image
+- **Print View**: Click "🖨️ Print View" for print-optimized documentation with white backgrounds
+- **Single-Page Layout**: Entire schema scales to fit on one page with mathematical precision
+- **Printer-Friendly**: Automatic color conversion ensures professional print quality
 - **SVG Fallback**: Automatic fallback if PNG export fails
+- **Ultra-High Resolution**: 4x DPI scaling for crisp, professional quality
 
 ## 🛠️ Technical Details
 
@@ -163,11 +169,17 @@ The `lnbits_extensions_data.json` file contains:
 ## 🚀 Future Enhancements
 
 ### ✅ Completed Features
-- **✅ Export Functionality**: Export filtered views as PNG images
-- **✅ Print Support**: Generate print-optimized documentation
-- **✅ Dependency Analysis**: Interactive table-to-table dependency analysis
-- **✅ Bidirectional Relationships**: Shows both directions of data flow
-- **✅ Foreign Key Mapping**: Detailed field relationship information
+- **✅ Export Functionality**: Export filtered views as PNG images with high-resolution rendering
+- **✅ Print Support**: Generate print-optimized documentation with white backgrounds and dark text
+- **✅ Dependency Analysis**: Interactive table-to-table dependency analysis with modal display
+- **✅ Bidirectional Relationships**: Shows both directions of data flow ("Uses Data From" and "Provides Data To")
+- **✅ Foreign Key Mapping**: Detailed field relationship information (e.g., `user → account.id`)
+- **✅ Extension-to-Extension Dependencies**: Complete mapping of inter-extension relationships
+- **✅ Interactive Table Highlighting**: Click tables to highlight related core and extension tables
+- **✅ Comprehensive Color Conversion**: Printer-friendly color conversion for all elements
+- **✅ Single-Page Print Layout**: Mathematical scaling to fit entire schema on one page
+- **✅ SVG Fallback Export**: Automatic fallback to SVG if PNG export fails
+- **✅ High-Resolution Export**: Ultra-high DPI rendering for crisp image quality
 
 ### 🔮 Planned Features
 - **API Integration**: Real-time data from LNbits instances
