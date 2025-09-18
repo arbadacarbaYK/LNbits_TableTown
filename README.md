@@ -8,8 +8,6 @@ LNbits Table Town is an interactive database schema visualization that provides 
 
 **Live Demo**: [https://arbadacarbayk.github.io/LNbits_TableTown/](https://arbadacarbayk.github.io/LNbits_TableTown/)
 
-**Author**: [arbadacarbayk](https://github.com/arbadacarbaYK) | [info@plebtag.com](mailto:info@plebtag.com)
-
 ## 🚀 Features
 
 ### 🎮 Interactive Interface
