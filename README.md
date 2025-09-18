@@ -127,18 +127,7 @@ open lnbits_schema_interactive.html
 - **Click on Extensions**: Highlight the entire extension group
 - **Click on Empty Space**: Reset all highlights
 
-### 6. **Switch Views**
-- **Developer View**: Shows technical details, field definitions, GitHub links
-- **End-User View**: Shows user-friendly descriptions and use cases
-
 ## 🛠️ Technical Details
-
-### File Structure
-```
-lnbits_schema_interactive.html    # Main interactive interface
-lnbits_extensions_data.json       # Comprehensive extension data
-LNBITS_INTERACTIVE_SCHEMA_DESIGN.md  # Design documentation
-```
 
 ### Data Structure
 The `lnbits_extensions_data.json` file contains:
@@ -152,44 +141,6 @@ The `lnbits_extensions_data.json` file contains:
 - **SVG**: Scalable vector graphics for crisp rendering
 - **CSS Grid**: Responsive layout management
 - **JavaScript**: Interactive filtering and search
-
-## 🎯 Use Cases
-
-### For Developers
-- **Database Design**: Understand LNbits database structure
-- **Extension Development**: See how extensions integrate with core
-- **API Integration**: Understand table relationships and foreign keys
-- **Dependency Analysis**: See which extensions depend on core tables
-
-### For End Users
-- **Feature Discovery**: Learn what LNbits can do
-- **Extension Selection**: Choose the right extensions for your needs
-- **Understanding**: Get a visual understanding of the LNbits ecosystem
-- **Planning**: Plan your LNbits setup based on available features
-
-### For System Administrators
-- **Database Planning**: Understand database requirements
-- **Extension Management**: See which extensions to install
-- **Performance**: Understand table relationships for optimization
-- **Security**: Understand access control and permissions
-
-## 🔧 Customization
-
-### Adding New Extensions
-1. Edit `lnbits_extensions_data.json`
-2. Add new extension under `extensions` section
-3. Define tables, dependencies, and metadata
-4. Refresh the interface
-
-### Modifying Categories
-1. Edit the `categories` section in the JSON file
-2. Update colors and descriptions
-3. Refresh the interface
-
-### Styling Changes
-1. Edit the CSS section in the HTML file
-2. Modify colors, fonts, and layout
-3. Refresh the interface
 
 ## 🚀 Future Enhancements
 
@@ -212,44 +163,6 @@ The interface is fully responsive and works on:
 - **Desktop**: Full interactive experience
 - **Tablet**: Touch-friendly controls
 - **Mobile**: Simplified view with essential features
-
-## 🎨 Color Scheme
-
-- **💖 Core LNbits**: #FF1493 (LNbits Pink)
-- **🟡 Onchain Features**: #FFD700 (Yellow)
-- **🟣 Nostr Integration**: #6600CC (Violet)
-- **🔴 Gaming & Entertainment**: #8A0000 (Dark Maroon)
-- **🟠 E-commerce & Business**: #CA6702 (Burnt Orange)
-- **🔵 Hardware & IoT**: #1A202C (Dark Blue)
-- **🟢 Communication & Social**: #0A9396 (Medium Teal)
-
-## 🚀 Deployment
-
-### GitHub Pages (Recommended)
-1. Fork this repository
-2. Go to Settings → Pages
-3. Select "Deploy from a branch" → main
-4. Your site will be live at `https://yourusername.github.io/LNbits_TableTown/`
-
-### Local Development
-```bash
-# Clone the repository
-git clone https://github.com/arbadacarbaYK/LNbits_TableTown.git
-
-# Open the HTML file in your browser
-open index.html
-```
-
-### Self-Hosting
-Simply upload `index.html` to any web server - it's completely self-contained!
-
-## 🤝 Contributing
-
-To contribute to this project:
-1. Fork the repository
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
 
 ## 📄 License
 
