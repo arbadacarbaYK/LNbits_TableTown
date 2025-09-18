@@ -172,8 +172,6 @@ This project is open source and available under the MIT License.
 
 For support or questions:
 - **GitHub Issues**: [Report bugs or request features](https://github.com/arbadacarbaYK/LNbits_TableTown/issues)
-- **Email**: [info@plebtag.com](mailto:info@plebtag.com)
-- **GitHub**: [@arbadacarbayk](https://github.com/arbadacarbaYK)
 - **Community**: Join the [LNbits community](https://t.me/lnbits) for help
 
 ---
