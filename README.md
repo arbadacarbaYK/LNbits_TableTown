@@ -24,6 +24,10 @@ A comprehensive legend will explain all abbreviations and types used with an exa
 
 <img height="250" alt="Screenshot from 2025-09-18 14-06-09" src="https://github.com/user-attachments/assets/0841023d-b93f-41f5-b56c-76e2e7f5f259" />
 
+Search terms are highlighted in the graph
+
+<img height="250" alt="Screenshot from 2025-09-18 14-56-08" src="https://github.com/user-attachments/assets/2dbf583c-cc8b-4980-bb49-9a7b7359d89d" />
+
 
 ### 🎮 Interactive Interface
 - **Zoomable & Pannable**: Navigate large schemas with mouse/touch gestures
