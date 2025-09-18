@@ -134,13 +134,12 @@ open lnbits_schema_interactive.html
 lnbits_schema_interactive.html    # Main interactive interface
 lnbits_extensions_data.json       # Comprehensive extension data
 LNBITS_INTERACTIVE_SCHEMA_DESIGN.md  # Design documentation
-LNBITS_INTERACTIVE_SCHEMA_README.md  # This file
 ```
 
 ### Data Structure
 The `lnbits_extensions_data.json` file contains:
 - **Core Tables**: Complete definitions with fields and relationships
-- **Extensions**: All 50+ vetted extensions with their database models
+- **Extensions**: All vetted extensions with their database models
 - **Categories**: Color coding and descriptions for each category
 - **Dependencies**: Which extensions depend on core tables
 
