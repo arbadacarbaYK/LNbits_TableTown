@@ -18,10 +18,6 @@
 │   ☐ Hardware & IoT                         │
 │   ☐ Communication & Social                 │
 │                                             │
-│ 🎯 By User Type:                           │
-│   ☑️ Developer View                        │
-│   ☐ End-User View                          │
-│                                             │
 │ 🔗 Show Dependencies:                      │
 │   ☑️ Always show core tables               │
 │   ☑️ Highlight extension relationships     │
@@ -218,12 +214,3 @@ function filterByCategory(category) {
 - **Export Options**: Save filtered views
 - **Print Friendly**: Generate documentation
 
-## 🚀 Implementation Plan
-
-1. **Phase 1**: Create basic interactive interface
-2. **Phase 2**: Add all extension data and categorization
-3. **Phase 3**: Implement advanced filtering and dependencies
-4. **Phase 4**: Add user-friendly descriptions and tooltips
-5. **Phase 5**: Optimize for mobile and accessibility
-
-This enhanced design creates a comprehensive, interactive database schema that serves both technical developers and non-technical users, making LNbits' complex architecture accessible and understandable to everyone.
