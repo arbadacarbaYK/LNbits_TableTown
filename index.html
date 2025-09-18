@@ -3021,24 +3021,24 @@
                 // Clone the SVG
                 const svgClone = svgElement.cloneNode(true);
                 
-                // Get bounding box with padding for headlines
+                // Get bounding box with proper padding for headlines
                 let bbox;
                 try {
                     bbox = g.node().getBBox();
                     console.log('BBox:', bbox);
-                    // Add padding to include headlines
+                    // Add proper padding to include headlines
                     bbox.x -= 20;
-                    bbox.y -= 50; // Extra padding for headlines
+                    bbox.y -= 60; // More padding for core headline
                     bbox.width += 40;
-                    bbox.height += 100; // Extra padding for headlines
+                    bbox.height += 120; // More padding for headlines
                 } catch (e) {
                     console.log('BBox error:', e);
                     // Fallback to SVG dimensions
                     bbox = {
                         x: -20,
-                        y: -50,
+                        y: -60,
                         width: (parseFloat(svgElement.getAttribute('width')) || 1200) + 40,
-                        height: (parseFloat(svgElement.getAttribute('height')) || 800) + 100
+                        height: (parseFloat(svgElement.getAttribute('height')) || 800) + 120
                     };
                 }
                 
@@ -3052,21 +3052,26 @@
                 const svgData = new XMLSerializer().serializeToString(svgClone);
                 console.log('SVG data length:', svgData.length);
                 
-                // Create canvas
+                // Create high-resolution canvas
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 const img = new Image();
                 
-                canvas.width = 1200;
-                canvas.height = 800;
+                // Ultra high resolution for crisp export
+                const dpi = 4; // 4x resolution for ultra crisp text
+                canvas.width = 1200 * dpi;
+                canvas.height = 800 * dpi;
                 
-                // Set background
+                // Scale context for high DPI
+                ctx.scale(dpi, dpi);
+                
+                // Set background (scaled dimensions)
                 ctx.fillStyle = '#0a0a0a';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillRect(0, 0, 1200, 800);
                 
                 img.onload = function() {
                     console.log('Image loaded, drawing to canvas...');
-                    ctx.drawImage(img, 0, 0);
+                    ctx.drawImage(img, 0, 0, 1200, 800);
                     
                     // Convert to blob and download
                     canvas.toBlob(function(blob) {
@@ -3130,78 +3135,168 @@
                 return;
             }
             
-            // Clone the SVG
+            // Clone the SVG and modify colors for printing
             const svgClone = svgElement.cloneNode(true);
+            
+            // Convert all colors for printing - aggressive approach
+            try {
+                // Force all backgrounds to white and text to dark
+                const allElements = svgClone.querySelectorAll('*');
+                
+                allElements.forEach(el => {
+                    const tagName = el.tagName.toLowerCase();
+                    
+                    // Force white background for all rect elements (table backgrounds)
+                    if (tagName === 'rect') {
+                        el.setAttribute('fill', 'white');
+                        el.setAttribute('stroke', '#333');
+                    }
+                    
+                    // Force dark text for all text elements
+                    if (tagName === 'text') {
+                        el.setAttribute('fill', '#333');
+                    }
+                    
+                    // Force dark text for all tspan elements
+                    if (tagName === 'tspan') {
+                        el.setAttribute('fill', '#333');
+                    }
+                    
+                    // Force white background for all circle elements
+                    if (tagName === 'circle') {
+                        el.setAttribute('fill', 'white');
+                        el.setAttribute('stroke', '#333');
+                    }
+                    
+                    // Force white background for all path elements
+                    if (tagName === 'path') {
+                        el.setAttribute('fill', 'white');
+                        el.setAttribute('stroke', '#333');
+                    }
+                });
+                
+                // Add a comprehensive style override
+                const styleElement = svgClone.querySelector('style');
+                if (styleElement) {
+                    styleElement.textContent = `
+                        * { fill: white !important; color: #333 !important; }
+                        rect { fill: white !important; stroke: #333 !important; }
+                        text, tspan { fill: #333 !important; }
+                        .table-group rect, .extension-table-group rect { fill: white !important; stroke: #333 !important; }
+                        .table-header rect { fill: #f0f0f0 !important; stroke: #333 !important; }
+                        .table-header text, .field-text { fill: #333 !important; }
+                        .fk-link { fill: #0066cc !important; }
+                        circle, path { fill: white !important; stroke: #333 !important; }
+                    `;
+                } else {
+                    // Create a new style element if none exists
+                    const newStyle = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+                    newStyle.textContent = `
+                        * { fill: white !important; color: #333 !important; }
+                        rect { fill: white !important; stroke: #333 !important; }
+                        text, tspan { fill: #333 !important; }
+                        .table-group rect, .extension-table-group rect { fill: white !important; stroke: #333 !important; }
+                        .table-header rect { fill: #f0f0f0 !important; stroke: #333 !important; }
+                        .table-header text, .field-text { fill: #333 !important; }
+                        .fk-link { fill: #0066cc !important; }
+                        circle, path { fill: white !important; stroke: #333 !important; }
+                    `;
+                    svgClone.insertBefore(newStyle, svgClone.firstChild);
+                }
+                
+            } catch (error) {
+                console.log('Color conversion error:', error);
+                // Continue without color modification
+            }
+            
             const bbox = g.node().getBBox();
             
-            // Set proper dimensions
-            svgClone.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
-            svgClone.setAttribute('width', '100%');
-            svgClone.setAttribute('height', 'auto');
-            svgClone.style.maxWidth = '100%';
-            svgClone.style.height = 'auto';
-            svgClone.style.backgroundColor = '#0a0a0a';
+            // Calculate page dimensions and scale to fit everything
+            const pageWidth = 8.5; // inches
+            const pageHeight = 11; // inches
+            const margin = 0.2; // inches
+            const footerHeight = 0.2; // inches for footer
             
-            // Write the print document
+            const availableWidth = (pageWidth - 2 * margin) * 96; // Convert to pixels
+            const availableHeight = (pageHeight - 2 * margin - footerHeight) * 96; // Convert to pixels
+            
+            // Add padding for headlines - increased for Core LNbits visibility
+            const topPadding = 80; // Space for Core LNbits headline
+            const bottomPadding = 20; // Space for footer
+            const sidePadding = 20; // Side margins
+            
+            const paddedBbox = {
+                x: bbox.x - sidePadding,
+                y: bbox.y - topPadding,
+                width: bbox.width + (sidePadding * 2),
+                height: bbox.height + topPadding + bottomPadding
+            };
+            
+            // Calculate scale to fit everything on one page
+            const scaleX = availableWidth / paddedBbox.width;
+            const scaleY = availableHeight / paddedBbox.height;
+            const scale = Math.min(scaleX, scaleY, 1); // Don't scale up
+            
+            // Set scaled dimensions
+            svgClone.setAttribute('viewBox', `${paddedBbox.x} ${paddedBbox.y} ${paddedBbox.width} ${paddedBbox.height}`);
+            svgClone.setAttribute('width', `${paddedBbox.width * scale}px`);
+            svgClone.setAttribute('height', `${paddedBbox.height * scale}px`);
+            svgClone.style.backgroundColor = 'white'; // White background for printing
+            
+            // Write the print document - minimal single page
             printWindow.document.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>LNbits Schema - Print View</title>
+                    <title>LNbits Schema</title>
                     <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
                         body { 
-                            margin: 0; 
-                            padding: 20px; 
                             background: white; 
-                            font-family: Arial, sans-serif; 
-                        }
-                        .print-header { 
-                            text-align: center; 
-                            margin-bottom: 20px; 
-                            border-bottom: 2px solid #333;
-                            padding-bottom: 10px;
-                        }
-                        .print-header h1 { 
-                            color: #333; 
-                            margin: 0; 
-                            font-size: 24px;
-                        }
-                        .print-header p { 
-                            color: #666; 
-                            margin: 5px 0; 
+                            font-family: Arial, sans-serif;
+                            padding: 0.2in;
+                            width: 8.5in;
+                            height: 11in;
+                            overflow: hidden;
                         }
                         .print-content {
-                            background: #0a0a0a;
-                            border-radius: 10px;
-                            padding: 20px;
-                            margin: 20px 0;
+                            height: 100%;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-between;
+                        }
+                        #print-content {
+                            flex: 1;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            overflow: hidden;
                         }
                         .print-footer { 
                             text-align: center; 
-                            margin-top: 20px; 
-                            font-size: 12px; 
-                            color: #666; 
-                            border-top: 1px solid #ccc;
-                            padding-top: 10px;
+                            font-size: 8px; 
+                            color: #666;
+                            height: 20px;
+                            line-height: 20px;
+                            flex-shrink: 0;
                         }
                         @media print { 
-                            body { margin: 0; padding: 10px; }
-                            .print-header { page-break-after: avoid; }
-                            .print-content { page-break-inside: avoid; }
+                            body { margin: 0; padding: 0.2in; }
+                            @page {
+                                margin: 0;
+                                size: 8.5in 11in;
+                            }
                         }
                     </style>
                 </head>
                 <body>
-                    <div class="print-header">
-                        <h1>LNbits Table Town</h1>
-                        <p>Interactive Database Explorer</p>
-                        <p>Generated: ${new Date().toLocaleString()}</p>
-                    </div>
-                    <div class="print-content" id="print-content">
-                        <!-- SVG will be inserted here -->
-                    </div>
-                    <div class="print-footer">
-                        <p>Generated by LNbits Table Town - https://arbadacarbayk.github.io/LNbits_TableTown/</p>
+                    <div class="print-content">
+                        <div id="print-content">
+                            <!-- SVG will be inserted here -->
+                        </div>
+                        <div class="print-footer">
+                            LNbits Table Town - https://arbadacarbayk.github.io/LNbits_TableTown/
+                        </div>
                     </div>
                 </body>
                 </html>
