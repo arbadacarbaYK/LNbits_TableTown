@@ -18,10 +18,6 @@
 │   ☐ Hardware & IoT                         │
 │   ☐ Communication & Social                 │
 │                                             │
-│ 🎯 By User Type:                           │
-│   ☑️ Developer View                        │
-│   ☐ End-User View                          │
-│                                             │
 │ 🔗 Show Dependencies:                      │
 │   ☑️ Always show core tables               │
 │   ☑️ Highlight extension relationships     │
@@ -45,7 +41,7 @@
 - **Selected**: Highlighted with border
 - **Dependent**: Connected with colored lines
 - **Greyed Out**: 30% opacity when filtered out
-- **Core Tables**: Always visible, grey background
+- **Core Tables**: Always visible
 
 ## 📊 Comprehensive Extension Categorization
 

@@ -3,8 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>LNbits Table Town - Interactive Database Explorer</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Cache busting - ensure fresh load
+        console.log('Page loaded at:', new Date().toISOString());
+        
+        // Debug: Check initial state
+        window.addEventListener('load', () => {
+            console.log('Page fully loaded');
+            const schemaContainer = document.getElementById('schemaContainer');
+            const apiDiffTab = document.getElementById('apiDiffTab');
+            console.log('Schema container:', schemaContainer);
+            console.log('Schema container display:', schemaContainer.style.display);
+            console.log('API Diff tab:', apiDiffTab);
+            console.log('API Diff tab display:', apiDiffTab.style.display);
+            console.log('Schema container children:', schemaContainer.children.length);
+            console.log('API Diff tab children:', apiDiffTab.children.length);
+        });
+    </script>
     <style>
         * {
             margin: 0;
@@ -12,12 +32,19 @@
             box-sizing: border-box;
         }
 
+        html {
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #0a0a0a;
             color: #e0e0e0;
-            min-height: 100vh;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
+            height: 100vh;
         }
 
         .header {
@@ -31,18 +58,49 @@
             right: 0;
             z-index: 1000;
             border-bottom: 1px solid #333;
+            height: 180px;
+            overflow: hidden;
         }
-
-        .header h1 {
+        
+        .header-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .header-left h1 {
             color: #e0e0e0;
             font-size: 1.8rem;
-            margin-bottom: 0.5rem;
+            margin: 0;
+        }
+        
+        .header-subtitle {
+            margin-top: 0.5rem;
+        }
+        
+        .header-subtitle p {
+            color: #999;
+            font-size: 0.85rem;
+            margin: 0.2rem 0;
+            line-height: 1.3;
+        }
+        
+        .subtitle-note {
+            color: #777 !important;
+            font-size: 0.75rem !important;
+            font-style: italic;
+        }
+        
+        .header-right .tabs {
+            margin: 0;
         }
 
-        .header p {
-            color: #999;
-            font-size: 0.9rem;
-        }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+        .tab-btn { padding: 0.45rem 0.9rem; border: 2px solid #444; background: #1a1a1a; color: #e0e0e0; border-radius: 18px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s ease; }
+        .tab-btn.active { border-color: #ffffff; background: #2a2a2a; }
 
         .controls {
             display: flex;
@@ -50,11 +108,15 @@
             margin-top: 1rem;
             flex-wrap: wrap;
             align-items: center;
+            position: relative;
+            z-index: 1001;
         }
 
         .search-container {
             position: relative;
             display: inline-block;
+            z-index: 1001;
+            margin: 0.25rem 0;
         }
 
         .search-container::before {
@@ -83,7 +145,7 @@
         }
 
         .search-box {
-            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
             border: 2px solid #444;
             border-radius: 25px;
             font-size: 0.9rem;
@@ -91,6 +153,8 @@
             background: #1a1a1a;
             color: #e0e0e0;
             transition: border-color 0.3s;
+            position: relative;
+            z-index: 1002;
         }
 
         .search-box:focus {
@@ -210,19 +274,22 @@
 
 
         .main-container {
-            margin-top: 200px;
-            height: calc(100vh - 200px);
+            margin-top: 180px;
             position: relative;
+            padding-bottom: 0;
+            box-sizing: border-box;
+            height: calc(100vh - 180px);
+            overflow: hidden;
         }
 
         .schema-container {
             width: 100%;
-            height: 100%;
             background: #1a1a1a;
             border-radius: 20px 20px 0 0;
             box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
+            padding-bottom: 50px;
             border: 1px solid #333;
+            box-sizing: border-box;
         }
 
         .legend {
@@ -700,57 +767,196 @@
                 right: auto;
             }
         }
+
+        .api-diff-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding-bottom: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .api-diff-workflow {
+            width: 100%;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 16px;
+            flex-shrink: 0;
+        }
+        
+        .workflow-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .workflow-option {
+            background: #2a2a2a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        
+        .workflow-option h4 {
+            color: #4CAF50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .workflow-option p {
+            color: #ccc;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .comparison-results {
+            background: #2a2a2a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #444;
+            width: 100%;
+            margin-top: 0.25rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .comparison-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .comparison-side h4 {
+            color: #4CAF50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .comparison-content {
+            margin-top: 1rem;
+        }
+        
+        #apiDiffResults {
+            width: 100%;
+            background: #1a1a1a;
+            flex: 1;
+            height: calc(100vh - 400px);
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        /* Dark mode scrollbar styling */
+        #apiDiffResults::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #apiDiffResults::-webkit-scrollbar-track {
+            background: #2a2a2a;
+            border-radius: 6px;
+        }
+        
+        #apiDiffResults::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 6px;
+            border: 2px solid #2a2a2a;
+        }
+        
+        #apiDiffResults::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+        
+        #apiDiffResults::-webkit-scrollbar-corner {
+            background: #2a2a2a;
+        }
+        .api-diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .api-side { background: #141414; border: 1px solid #333; border-radius: 10px; padding: 12px; }
+        .api-side h3 { margin-bottom: 8px; font-size: 1rem; }
+        .api-input-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        .api-input-row input[type="text"] { flex: 1; min-width: 260px; padding: 8px 10px; border: 1px solid #444; border-radius: 8px; background: #1a1a1a; color: #e0e0e0; }
+        .api-input-row button { padding: 8px 12px; border: 1px solid #444; background: #222; color: #e0e0e0; border-radius: 8px; cursor: pointer; }
+        .api-meta { font-size: 0.8rem; color: #aaa; margin-top: 4px; }
+        .api-diff-results { margin-top: 16px; background: #141414; border: 1px solid #333; border-radius: 10px; padding: 12px; }
+        .diff-section { margin-top: 12px; }
+        .diff-section h4 { margin-bottom: 6px; font-size: 0.95rem; }
+        .diff-added { color: #4CAF50; }
+        .diff-removed { color: #ff6b6b; }
+        .diff-changed { color: #FFD166; }
+        .diff-list { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.85rem; line-height: 1.4; }
+        .diff-list li { margin: 2px 0; }
+        /* Paired comparison */
+        .paired-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 12px; }
+        /* Ensure consistent column alignment for paired comparison */
+        .paired-table { table-layout: fixed; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .paired-table th, .paired-table td { word-break: break-word; white-space: pre-wrap; }
+        .paired-table th:nth-child(1), .paired-table td:nth-child(1) { width: 45%; }
+        .paired-table th:nth-child(2), .paired-table td:nth-child(2) { width: 45%; }
+        .paired-table th:nth-child(3), .paired-table td:nth-child(3) { width: 10%; }
+        .paired-table th, .paired-table td { padding: 6px 8px; border-bottom: 1px solid #333; vertical-align: top; }
+        .paired-table th { color: #aaa; text-align: left; }
+        .paired-group { background: #1a1a1a; color: #ccc; font-weight: bold; cursor: pointer; user-select: none; }
+        .paired-group:hover { background: #2a2a2a; }
+        .paired-group::after { content: ' ▼'; float: right; }
+        .paired-group.collapsed::after { content: ' ▶'; }
+        .paired-group + table { display: table; }
+        .paired-group.collapsed + table { display: none; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>LNbits Table Town</h1>
-        <p>Explore LNbits' complete database structure with interactive visualizations. Discover core tables, extension schemas, and relationships across all LNbits modules including Lightning payments, Nostr integration, gaming, e-commerce, and more.</p>
+        <!-- Header Line: Title left, Tab buttons right -->
+        <div class="header-line">
+            <div class="header-left">
+                <h1 id="pageTitle">LNbits Table Town</h1>
+                <div id="pageSubtitle" class="header-subtitle" style="display: none;">
+                    <p>Compare your dev-environment against production</p>
+                    <p class="subtitle-note">Note: Only installed and free extensions are compared. Demo.lnbits.com has removed certain endpoints for security reasons.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="schemaTab">DB Scheme</button>
+                    <button class="tab-btn" data-tab="apiDiffTab">API Diff</button>
+                </div>
+            </div>
+        </div>
         
-        <div class="controls">
+        <!-- Controls Line: Only visible on DB Scheme tab -->
+        <div class="controls" id="dbControls">
             <div class="search-container">
                 <input type="text" class="search-box" placeholder="Search tables, extensions..." id="searchInput">
                 <button class="search-clear" id="searchClear" style="display: none;">×</button>
             </div>
             
-        <div class="filter-group">
-            <span style="font-weight: bold; color: #666;">Filter by:</span>
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="onchain" style="border-color: #FFD700;"><span class="category-bubble" style="background-color: #FFD700;"></span> Onchain Features</button>
-            <button class="filter-btn" data-filter="nostr" style="border-color: #6600CC;"><span class="category-bubble" style="background-color: #6600CC;"></span> Nostr Integration</button>
-            <button class="filter-btn" data-filter="gaming" style="border-color: #8A0000;"><span class="category-bubble" style="background-color: #8A0000;"></span> Gaming & Entertainment</button>
-            <button class="filter-btn" data-filter="ecommerce" style="border-color: #CA6702;"><span class="category-bubble" style="background-color: #CA6702;"></span> E-commerce & Business</button>
-            <button class="filter-btn" data-filter="hardware" style="border-color: #1A202C;"><span class="category-bubble" style="background-color: #1A202C;"></span> Hardware & IoT</button>
-            <button class="filter-btn" data-filter="communication" style="border-color: #0A9396;"><span class="category-bubble" style="background-color: #0A9396;"></span> Communication & Social</button>
-        </div>
-        
-        <div class="analysis-group">
-            <span style="font-weight: bold; color: #666;">Tools:</span>
-            <button class="analysis-btn" id="exportView">📸 Export View</button>
-            <button class="analysis-btn" id="printView">🖨️ Print View</button>
-        </div>
+            <div class="filter-group">
+                <span style="font-weight: bold; color: #666;">Filter by:</span>
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="onchain" style="border-color: #FFD700;"><span class="category-bubble" style="background-color: #FFD700;"></span> Onchain Features</button>
+                <button class="filter-btn" data-filter="nostr" style="border-color: #6600CC;"><span class="category-bubble" style="background-color: #6600CC;"></span> Nostr Integration</button>
+                <button class="filter-btn" data-filter="gaming" style="border-color: #8A0000;"><span class="category-bubble" style="background-color: #8A0000;"></span> Gaming & Entertainment</button>
+                <button class="filter-btn" data-filter="ecommerce" style="border-color: #CA6702;"><span class="category-bubble" style="background-color: #CA6702;"></span> E-commerce & Business</button>
+                <button class="filter-btn" data-filter="hardware" style="border-color: #1A202C;"><span class="category-bubble" style="background-color: #1A202C;"></span> Hardware & IoT</button>
+                <button class="filter-btn" data-filter="communication" style="border-color: #0A9396;"><span class="category-bubble" style="background-color: #0A9396;"></span> Communication & Social</button>
+            </div>
             
+            <div class="analysis-group">
+                <span style="font-weight: bold; color: #666;">Tools:</span>
+                <button class="analysis-btn" id="exportView">📸 Export View</button>
+                <button class="analysis-btn" id="printView">🖨️ Print View</button>
+            </div>
         </div>
     </div>
 
     <div class="main-container">
         <div class="schema-container" id="schemaContainer">
             <svg id="schemaSvg"></svg>
-        </div>
-        
-        <!-- Right legend removed as requested -->
-        
-        
-        
         <div class="zoom-controls">
             <button class="zoom-btn" id="zoomIn">+</button>
             <button class="zoom-btn" id="zoomOut">-</button>
             <button class="zoom-btn" id="resetZoom">⌂</button>
             </div>
-        
-        <!-- Stats removed as requested -->
-        
-        <!-- Left Legend for Field Constraints -->
         <div class="legend-explanations" id="legend-explanations">
             <h4>Field Constraints</h4>
             <div class="legend-item">
@@ -763,220 +969,92 @@
             </div>
             <div class="legend-item">
                 <span class="legend-abbrev">FK</span>
-                <span>FOREIGN KEY - References another table (clickable)<br/><small>Example: wallet → Wallet.id, user → Account.id</small></span>
+                    <span>FOREIGN KEY - Links to another table<br/><small>Example: wallet → Wallet.id</small></span>
             </div>
             <div class="legend-item">
-                <span class="legend-abbrev">EXT</span>
-                <span>EXTERNAL ID - External service identifier (not clickable)<br/><small>Example: boltz_id (Boltz service), external_id (SSO)<br/><strong>Note:</strong> EXT fields don't show links like FK fields</small></span>
+                    <span class="legend-abbrev">PK</span>
+                    <span>PRIMARY KEY - Unique identifier<br/><small>Example: id (UUID4)</small></span>
             </div>
             <div class="legend-item">
-                <span class="legend-abbrev">DEF0</span>
-                <span>DEFAULT 0 - Default value is 0<br/><small>Example: balance_msat, counter, used</small></span>
+                    <span class="legend-abbrev">JSON</span>
+                    <span>JSON data structure<br/><small>Hover for details</small></span>
             </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">DEF1</span>
-                <span>DEFAULT 1 - Default value is 1<br/><small>Example: active, enable, access_granted</small></span>
             </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">DEFNOW</span>
-                <span>DEFAULT NOW() - Default is current timestamp<br/><small>Example: created_at, updated_at</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">DEFsat</span>
-                <span>DEFAULT 'sat' - Default currency is satoshis<br/><small>Example: currency field</small></span>
-        </div>
-        
-            <h4>Data Types</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">UUID4</span>
-                <span>Universally Unique Identifier (36 chars)<br/><small>Example: 550e8400-e29b-41d4-a716-446655440000</small></span>
+            <!-- Toggle button for legend -->
+            <button id="toggleLegend" class="legend-toggle">Legend</button>
+            
+            <!-- Dependency Info Modal (like legend) -->
+            <div class="dependency-info-modal" id="dependencyInfoModal">
+                <div class="dependency-info-content">
+                    <h4>Table Dependencies</h4>
+                    <div id="dependencyInfoContent">
+                        <!-- Dependency info will be rendered here -->
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">TEXT</span>
-                <span>Variable length text string<br/><small>Example: "My Wallet", "alice@example.com"</small></span>
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">BIGINT</span>
-                <span>Large integer (8 bytes)<br/><small>Example: 1000000 (amount in msat)</small></span>
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">BOOLEAN</span>
-                <span>True/False value<br/><small>Example: true, false</small></span>
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">TIMESTAMP</span>
-                <span>Date and time value<br/><small>Example: 2024-01-01 12:00:00</small></span>
+        <div class="api-diff-container" id="apiDiffTab" style="display:none">
+            <!-- Search/Input Section - Fixed at top -->
+            <div class="api-diff-workflow">
+                <h3></h3>
+                <div class="workflow-options">
+                    <div class="workflow-option">
+                        <h4>Compare Your Installation to Demo</h4>
+                        <p>Compare your LNbits instance against the latest demo.lnbits.com</p>
+                        <div class="api-input-row">
+                            <input type="text" id="originUrl" placeholder="https://your-lnbits-instance or bitcoindelta.club" />
+                            <button id="compareToDemo">Compare to demo.lnbits.com</button>
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">JSON</span>
-                <span>JSON data structure<br/><small>Example: {"read": true}, ["relay1", "relay2"]</small></span>
-                </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">DECIMAL</span>
-                <span>Decimal number with precision<br/><small>Example: 2.5 (multiplier)</small></span>
-                </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">INTEGER</span>
-                <span>Whole number<br/><small>Example: 18 (GPIO pin), 100 (max_tickets)</small></span>
             </div>
             
-            <h4>Key Formats</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">nostr_private_key</span>
-                <span>Nostr keys in hex format<br/><small>Stored as hex, displayed as npub1.../nsec1...</small></span>
+                    <div class="workflow-option">
+                        <h4>Compare Two Custom URLs</h4>
+                        <p>Compare any two LNbits instances</p>
+                        <div class="api-input-row">
+                            <input type="text" id="leftUrl" placeholder="https://first-instance or domain.com" />
+                            <input type="text" id="rightUrl" placeholder="https://second-instance or domain.com" />
+                            <button id="compareCustom">Compare URLs</button>
+                </div>
+                </div>
+                </div>
                 </div>
             
-            <h4>Lightning Network Formats</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">BOLT11</span>
-                <span>Lightning invoice format<br/><small>Example: lnbc10u1p...</small></span>
+            <!-- Results Section - Below search, scrollable -->
+            <div id="apiDiffResults" style="display:none;">
+                <div class="comparison-results">
+                    <div class="comparison-header">
+                        <div class="comparison-side">
+                            <h4 id="leftTitle">Left Side</h4>
+                            <div class="api-meta" id="leftMeta">No spec loaded.</div>
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">PAYMENT_HASH</span>
-                <span>Lightning payment hash (64 hex chars)<br/><small>Example: a1b2c3...</small></span>
+                        <div class="comparison-side">
+                            <h4 id="rightTitle">Right Side</h4>
+                            <div class="api-meta" id="rightMeta">No spec loaded.</div>
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">ADMINKEY</span>
-                <span>LNbits admin key (43 chars)<br/><small>Example: admin_...</small></span>
-                </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">INKEY</span>
-                <span>LNbits invoice key (43 chars)<br/><small>Example: invoice_...</small></span>
-                </div>
-            
-            <h4>Bitcoin Formats</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">PUBKEY</span>
-                <span>Bitcoin public key (66 hex chars)<br/><small>Example: 02a1b2c3...</small></span>
-                </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">PRIVKEY</span>
-                <span>Bitcoin private key (64 hex chars)<br/><small>Example: L1aW4aubDFB7yfras2S1mN3bqg9nwySY8nkoLmJebSxDf3SfGjZ</small></span>
-                </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">ADDRESS</span>
-                <span>Bitcoin address (bech32/legacy)<br/><small>Example: bc1q..., 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</small></span>
             </div>
             
-            <h4>Other Formats</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">UUID4</span>
-                <span>Universally unique identifier<br/><small>Example: 550e8400-e29b-41d4-a716-446655440000</small></span>
-                </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">MSAT</span>
-                <span>Millisatoshi (1/1000th of satoshi)<br/><small>Example: 1000000 (1 satoshi)</small></span>
-                </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">UID</span>
-                <span>NFC card unique identifier<br/><small>Example: 04:12:34:56:78:90:ab</small></span>
+                    <div class="comparison-content" id="comparisonContent">
+                        <!-- Results will be populated here -->
                 </div>
             
-            <h4>New Field Types</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">REAL</span>
-                <span>Floating point number<br/><small>Example: 10.50 (currency_amount), 0.5 (chance)</small></span>
+                    <div id="apiDiffSummary"></div>
+                    <div class="split-columns" id="splitColumns" style="display:flex;gap:12px;align-items:flex-start;margin-top:8px;">
+                        <div class="split-col" id="leftChanges" style="flex:1 1 0;min-width:0;"><h4 style="color:#ccc">Left (baseline)</h4></div>
+                        <div class="split-col" id="rightChanges" style="flex:1 1 0;min-width:0;"><h4 style="color:#ccc">Right (comparison)</h4></div>
                 </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">FLOAT</span>
-                <span>Decimal number<br/><small>Example: 2.5 (multiplier), 0.01 (haircut)</small></span>
+                    <div id="pairedCompare"></div>
                 </div>
-            
-            <h4>Extension-Specific Formats</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">XPUB</span>
-                <span>Extended public key (111 chars)<br/><small>Example: xpub6... (masterpub in WatchOnly)</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">FINGERPRINT</span>
-                <span>Key fingerprint (8 hex chars)<br/><small>Example: a1b2c3d4</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">ENCRYPTION_KEY</span>
-                <span>32-byte encryption key (64 hex chars)<br/><small>Example: k0, k1, k2 in BoltCards</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">OTP</span>
-                <span>One-time password (32 hex chars)<br/><small>Example: 00000000000000000000000000000000</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">BIP21</span>
-                <span>Bitcoin URI with amount<br/><small>Example: bitcoin:bc1q...?amount=0.001</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">REDEEM_SCRIPT</span>
-                <span>Bitcoin redeem script (hex)<br/><small>Example: 522102... (for Boltz swaps)</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">BLINDING_KEY</span>
-                <span>Liquid blinding key (64 hex chars)<br/><small>Example: a1b2c3... (for Liquid swaps)</small></span>
-        </div>
-        
-            <h4>Webhook & Integration Formats</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">WEBHOOK_HEADERS</span>
-                <span>HTTP headers as JSON<br/><small>Example: {"Authorization":"Bearer token"}</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">WEBHOOK_BODY</span>
-                <span>HTTP body as JSON<br/><small>Example: {"amount":1000,"memo":"Payment"}</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">CUSTOM_CSS</span>
-                <span>CSS styles as JSON<br/><small>Example: {"styles":".custom{color:blue}"}</small></span>
-        </div>
-        
-            <h4>Gaming & Statistics</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">COUNTER</span>
-                <span>Usage counter (integer)<br/><small>Example: 0, 1, 2... (card taps, bets)</small></span>
-        </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">HAIRCUT</span>
-                <span>House edge percentage<br/><small>Example: 0.01 (1% house edge)</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">CHANCE</span>
-                <span>Win probability (0.0-1.0)<br/><small>Example: 0.5 (50% chance to win)</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">MULTIPLIER</span>
-                <span>Payout multiplier<br/><small>Example: 2.0 (2x payout)</small></span>
-            </div>
-            
-            <h4>Network & Protocol</h4>
-            <div class="legend-item">
-                <span class="legend-abbrev">ASSET</span>
-                <span>Asset pair for swaps<br/><small>Example: BTC/BTC, BTC/L-BTC</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">DIRECTION</span>
-                <span>Swap direction<br/><small>Example: receive, send</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">FEERATE</span>
-                <span>Fee rate preference<br/><small>Example: true/false (use custom fee)</small></span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-abbrev">BLOCK_HEIGHT</span>
-                <span>Bitcoin block height<br/><small>Example: 800000 (timeout block)</small></span>
             </div>
         </div>
         
-        <!-- Toggle button for legend -->
-        <button id="toggleLegend" class="legend-toggle">Legend</button>
         
-        <!-- Dependency Info Modal (like legend) -->
-        <div class="dependency-info-modal" id="dependencyInfoModal">
-            <div class="dependency-info-content">
-                <h4>Table Dependencies</h4>
-                <div id="dependencyInfoContent">
-                    <!-- Dependency info will be rendered here -->
-                </div>
+        
+        <!-- Stats removed as requested -->
+        
+        
+        
             </div>
-        </div>
-    </div>
-
+            
     <div class="tooltip" id="tooltip" style="display: none;"></div>
     
     <!-- Dependency Analysis Modal -->
@@ -991,10 +1069,10 @@
                     <button class="dependency-btn" id="showAllDeps">Show All Dependencies</button>
                     <button class="dependency-btn" id="showCoreDeps">Core Dependencies Only</button>
                     <button class="dependency-btn" id="showExtDeps">Extension-to-Extension</button>
-                </div>
+            </div>
                 <div id="dependencyContent" class="dependency-content">
                     <!-- Dependency analysis will be rendered here -->
-                </div>
+            </div>
             </div>
         </div>
     </div>
@@ -1078,9 +1156,12 @@
             const container = document.getElementById('schemaContainer');
             const containerRect = container.getBoundingClientRect();
             
+            // Use full viewport height for SVG
+            const svgHeight = window.innerHeight - 200;
+            
             svg = d3.select("#schemaSvg")
                 .attr("width", containerRect.width)
-                .attr("height", containerRect.height);
+                .attr("height", svgHeight);
 
             g = svg.append("g");
 
@@ -1430,7 +1511,7 @@
             let maxRight = 0;
             table.fields.forEach((field, i) => {
                 // Left side text includes icon and field name
-                const icon = (field === 'id' || field === 'checking_id') ? '🔑 ' : ((field === 'wallet' || field === 'user' || field === 'wallet_id' || field.endsWith('_id') || field === 'access_control_list') ? '🔗 ' : '');
+                const icon = (field === 'id' || field === 'checking_id') ? '🔑 ' : ((field === 'wallet' || field === 'user' || field === 'wallet_id' || field === 'access_control_list') ? '🔗 ' : '');
                 const left = estimateTextWidth(icon + field, leftFont);
                 if (left > maxLeft) maxLeft = left;
                 const dtype = (table.datatypes && table.datatypes[i]) ? table.datatypes[i] : 'TEXT';
@@ -1510,7 +1591,7 @@
             // Flexible core table layout with individual headlines like extensions
             if (coreTables.length > 0) {
                 // Use same width as extensions for symmetry
-                const extensionWidth = Math.min(200, (availableWidth - (padding * 2)) / 4 - 20); // Same as extensions
+                const extensionWidth = Math.max(120, Math.min(200, (availableWidth - (padding * 2)) / 4 - 20)); // Same as extensions
                 const coreTableWidth = extensionWidth; // Match extension width
                 const tablesPerRow = 5; // Fixed to 5 per row like extensions
                 const coreTableSpacing = Math.max(15, (availableWidth - (tablesPerRow * coreTableWidth)) / (tablesPerRow + 1));
@@ -1793,7 +1874,7 @@
                 const rows = Math.ceil(extensionData.length / cols);
                 
                 // Calculate spacing
-                const extensionWidth = Math.min(200, (availableWidth - (padding * 2)) / cols - 20);
+                const extensionWidth = Math.max(120, Math.min(200, (availableWidth - (padding * 2)) / cols - 20));
                 const extensionHeight = Math.min(200, availableExtensionHeight / rows - 20);
                 const horizontalSpacing = (availableWidth - (cols * extensionWidth)) / (cols + 1);
                 const verticalSpacing = (availableExtensionHeight - (rows * extensionHeight)) / (rows + 1);
@@ -2145,7 +2226,7 @@
             });
 
             selectedTable = tableName;
-            
+
             // Show dependency info modal
             showDependencyInfo(tableName, extensionId);
 
@@ -3331,6 +3412,1011 @@
             });
         }
 
+        // Tabs: DB Scheme / API Diff
+        (function setupTabs() {
+            const buttons = document.querySelectorAll('.tab-btn');
+            const schemaContainer = document.getElementById('schemaContainer');
+            const apiDiffTab = document.getElementById('apiDiffTab');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const tab = btn.getAttribute('data-tab');
+                    const pageTitle = document.getElementById('pageTitle');
+                    const pageSubtitle = document.getElementById('pageSubtitle');
+                    
+                    if (tab === 'schemaTab') {
+                        schemaContainer.style.display = 'block';
+                        apiDiffTab.style.display = 'none';
+                        if (pageTitle) pageTitle.textContent = 'LNbits Table Town';
+                        if (pageSubtitle) pageSubtitle.style.display = 'none';
+                        
+                        // Show controls for DB Scheme tab
+                        const dbControls = document.getElementById('dbControls');
+                        if (dbControls) {
+                            dbControls.style.display = 'flex';
+                        }
+                        
+                        // Reset schema container to natural height
+                        schemaContainer.style.height = 'auto';
+                        schemaContainer.style.minHeight = 'auto';
+                        schemaContainer.style.maxHeight = 'none';
+                        
+                        // Hide API Diff results when switching to DB Scheme
+                        const apiDiffResults = document.getElementById('apiDiffResults');
+                        if (apiDiffResults) {
+                            apiDiffResults.style.display = 'none';
+                            // Don't clear content - just hide it
+                        }
+                        
+                        // Only render schema if SVG doesn't exist yet
+                        setTimeout(() => {
+                            const existingSvg = document.getElementById('schemaSvg');
+                            if (!existingSvg && typeof buildSvgAndRender === 'function') {
+                                console.log('Initial schema render...');
+                                buildSvgAndRender();
+                            }
+                        }, 100);
+                    } else {
+                        schemaContainer.style.display = 'none';
+                        apiDiffTab.style.display = 'block';
+                        if (pageTitle) pageTitle.textContent = 'LNbits API Town';
+                        if (pageSubtitle) pageSubtitle.style.display = 'block';
+                        
+                        // Hide controls for API Diff tab
+                        const dbControls = document.getElementById('dbControls');
+                        if (dbControls) {
+                            dbControls.style.display = 'none';
+                        }
+                        
+                        // Reset API diff container to natural height
+                        apiDiffTab.style.height = 'auto';
+                        apiDiffTab.style.minHeight = 'auto';
+                        apiDiffTab.style.maxHeight = 'none';
+                        
+                        // If API Diff tab is selected and there are results, show them
+                        const apiDiffResults = document.getElementById('apiDiffResults');
+                        if (apiDiffResults && apiDiffResults.innerHTML.trim()) {
+                            apiDiffResults.style.display = 'block';
+                        }
+                    }
+                });
+            });
+        })();
+
+        // API Diff logic
+        function switchToApiDiff() {
+            const schemaContainer = document.getElementById('schemaContainer');
+            const apiDiffTab = document.getElementById('apiDiffTab');
+            const pageTitle = document.getElementById('pageTitle');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+            const dbControls = document.getElementById('dbControls');
+            if (schemaContainer) schemaContainer.style.display = 'none';
+            if (apiDiffTab) apiDiffTab.style.display = 'block';
+            if (pageTitle) pageTitle.textContent = 'LNbits API Town';
+            if (pageSubtitle) pageSubtitle.style.display = 'block';
+            if (dbControls) dbControls.style.display = 'none';
+            // mark tab buttons if present
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(b=>b.classList.remove('active'));
+            const apiBtn = Array.from(buttons).find(b=>b.getAttribute('data-tab')==='apiDiffTab');
+            if (apiBtn) apiBtn.classList.add('active');
+        }
+        const apiState = { left: null, right: null };
+
+        async function fetchJson(url) {
+            console.log('Fetching URL:', url);
+            try {
+                const res = await fetch(url);
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
+                }
+                const data = await res.json();
+                console.log('Successfully fetched data from:', url);
+                return data;
+            } catch (error) {
+                console.error('Error fetching URL:', url, error);
+                throw error;
+            }
+        }
+
+        function readFileAsJson(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try { resolve(JSON.parse(reader.result)); } catch (e) { reject(e); }
+                };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        function summarizeSpec(spec) {
+            const title = (spec && spec.info && spec.info.title) ? spec.info.title : 'Unknown';
+            const version = (spec && spec.info && spec.info.version) ? spec.info.version : 'unspecified';
+            const numPaths = spec && spec.paths ? Object.keys(spec.paths).length : 0;
+            return `${title} — v${version} · ${numPaths} paths`;
+        }
+
+        // Attach an extension->version map onto a spec for later use in headers
+        function attachExtensionVersions(spec, extensionSpecsOptional) {
+            try {
+                const versionMap = {};
+                // If we were given discrete extension specs (right side), prefer manifest info, then info.version
+                if (extensionSpecsOptional) {
+                    Object.entries(extensionSpecsOptional).forEach(([extName, extSpec]) => {
+                        let v;
+                        // First try manifest info (most reliable)
+                        if (extSpec && extSpec._manifestInfo && extSpec._manifestInfo.version) {
+                            v = String(extSpec._manifestInfo.version);
+                        }
+                        // Fallback to info.version
+                        else if (extSpec && extSpec.info && extSpec.info.version) {
+                            v = String(extSpec.info.version);
+                        }
+                        if (v) versionMap[extName.toLowerCase()] = v;
+                    });
+                }
+                // Also try to discover versions from tags metadata on the spec (left side or fallback)
+                if (spec && Array.isArray(spec.tags)) {
+                    spec.tags.forEach(tag => {
+                        const name = (tag && tag.name ? String(tag.name).toLowerCase() : '').trim();
+                        if (!name) return;
+                        const desc = tag && tag.description ? String(tag.description) : '';
+                        const m = desc.match(/v?(\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?)/);
+                        if (m && !versionMap[name]) {
+                            versionMap[name] = m[1];
+                        }
+                        // Support custom field x-extension-version if present
+                        if (tag && tag['x-extension-version'] && !versionMap[name]) {
+                            versionMap[name] = String(tag['x-extension-version']);
+                        }
+                    });
+                }
+                // Stash on the spec for easy lookup later
+                Object.defineProperty(spec, '_extVersions', { value: versionMap, enumerable: false, configurable: true });
+            } catch (_) {
+                // ignore
+            }
+        }
+
+        async function fetchLatestFromGitHub(leftSpec) {
+            try {
+                // Extract installed extensions from left spec
+                const installedExtensions = new Set();
+                if (leftSpec && leftSpec.paths) {
+                    for (const path of Object.keys(leftSpec.paths)) {
+                        const segments = path.split('/').filter(Boolean);
+                        if (segments.length > 0 && segments[0] !== 'api' && segments[0] !== 'public' && segments[0] !== 'users' && segments[0] !== 'admin') {
+                            installedExtensions.add(segments[0]);
+                        }
+                    }
+                }
+                
+                console.log('Found installed extensions:', Array.from(installedExtensions));
+                
+                // Fetch extensions manifest to get version info
+                const manifestResponse = await fetch('https://raw.githubusercontent.com/lnbits/lnbits-extensions/main/extensions.json');
+                const manifest = await manifestResponse.json();
+                const extensionVersions = {};
+                
+                // Build version map from manifest
+                if (manifest.extensions) {
+                    manifest.extensions.forEach(ext => {
+                        const key = ext.id.toLowerCase();
+                        extensionVersions[key] = {
+                            version: ext.version,
+                            max_lnbits_version: ext.max_lnbits_version,
+                            repo: ext.repo,
+                            name: ext.name,
+                            short_description: ext.short_description
+                        };
+                    });
+                }
+                
+                // Fetch complete spec from demo.lnbits.com (has latest core + extension APIs)
+                // This gives us the most complete API coverage
+                const coreResponse = await fetch('https://demo.lnbits.com/openapi.json');
+                const coreSpec = await coreResponse.json();
+                
+                // Use demo.lnbits.com for complete API spec (core + extensions)
+                // This gives us the most complete and reliable API coverage
+                const extensionSpecs = {}; // Empty since demo.lnbits.com has everything
+                
+                console.log('Using demo.lnbits.com for complete API spec');
+                
+                // Attach discovered versions onto coreSpec as a map for later lookup
+                attachExtensionVersions(coreSpec, extensionSpecs);
+                
+                // Also attach the manifest versions directly to coreSpec for easy access
+                coreSpec._manifestVersions = extensionVersions;
+                console.log('Attached manifest versions to coreSpec:', Object.keys(extensionVersions));
+                
+                console.log('Extension specs with manifest info:', Object.keys(extensionSpecs).map(k => ({
+                    name: k, 
+                    version: extensionSpecs[k]._manifestInfo?.version || 'no manifest',
+                    hasManifest: !!extensionSpecs[k]._manifestInfo
+                })));
+                
+                return {
+                    core: coreSpec,
+                    extensions: extensionSpecs,
+                    manifest: extensionVersions
+                };
+            } catch (error) {
+                console.error('Failed to fetch from GitHub:', error);
+                return null;
+            }
+        }
+
+        function buildOpIndex(spec) {
+            const index = new Map();
+            if (!spec || !spec.paths) return index;
+            for (const [path, pathItem] of Object.entries(spec.paths)) {
+                for (const method of ['get','post','put','patch','delete','options','head']) {
+                    const op = pathItem[method];
+                    if (op) {
+                        index.set(`${method.toUpperCase()} ${path}`, op);
+                    }
+                }
+            }
+            return index;
+        }
+
+        function compareOperations(opA, opB) {
+            const diffs = [];
+            if (!opA || !opB) return diffs;
+            
+            // Basic operation changes
+            if ((opA.summary||'') !== (opB.summary||'')) diffs.push('summary');
+            if ((opA.operationId||'') !== (opB.operationId||'')) diffs.push('operationId');
+            if (!!opA.deprecated !== !!opB.deprecated) diffs.push('deprecated flag');
+            
+            // Detailed parameter comparison
+            const compareParams = (paramsA, paramsB) => {
+                if (!paramsA && !paramsB) return true;
+                if (!paramsA || !paramsB) return false;
+                if (paramsA.length !== paramsB.length) return false;
+                
+                const normalizeParam = (p) => `${p.in}:${p.name}:${p.type||p.schema?.type||'unknown'}:${!!p.required}`;
+                const sortedA = paramsA.map(normalizeParam).sort();
+                const sortedB = paramsB.map(normalizeParam).sort();
+                return JSON.stringify(sortedA) === JSON.stringify(sortedB);
+            };
+            
+            if (!compareParams(opA.parameters, opB.parameters)) {
+                diffs.push('parameters (names, types, or required status)');
+            }
+            
+            // Request body comparison
+            const compareRequestBody = (rbA, rbB) => {
+                if (!rbA && !rbB) return true;
+                if (!rbA || !rbB) return false;
+                const ctA = rbA.content ? Object.keys(rbA.content).sort().join(',') : '';
+                const ctB = rbB.content ? Object.keys(rbB.content).sort().join(',') : '';
+                return ctA === ctB;
+            };
+            
+            if (!compareRequestBody(opA.requestBody, opB.requestBody)) {
+                diffs.push('requestBody content types');
+            }
+            
+            // Response comparison
+            const compareResponses = (respA, respB) => {
+                if (!respA && !respB) return true;
+                if (!respA || !respB) return false;
+                const keysA = Object.keys(respA).sort();
+                const keysB = Object.keys(respB).sort();
+                return JSON.stringify(keysA) === JSON.stringify(keysB);
+            };
+            
+            if (!compareResponses(opA.responses, opB.responses)) {
+                diffs.push('response status codes');
+            }
+            
+            // Security requirements
+            const secA = opA.security || [];
+            const secB = opB.security || [];
+            if (JSON.stringify(secA) !== JSON.stringify(secB)) {
+                diffs.push('security requirements');
+            }
+            
+            return diffs;
+        }
+
+        function computeDiff(leftSpec, rightSpec) {
+            const leftIdx = buildOpIndex(leftSpec);
+            const rightIdx = buildOpIndex(rightSpec);
+            const leftKeys = new Set(leftIdx.keys());
+            const rightKeys = new Set(rightIdx.keys());
+
+            let added = [];
+            let removed = [];
+            const changed = [];
+            const deprecated = [];
+
+            for (const key of rightKeys) if (!leftKeys.has(key)) added.push(key);
+            for (const key of leftKeys) if (!rightKeys.has(key)) removed.push(key);
+            for (const key of rightKeys) {
+                if (leftKeys.has(key)) {
+                    const diffs = compareOperations(leftIdx.get(key), rightIdx.get(key));
+                    if (diffs.length) changed.push(`${key} — ${diffs.join(', ')}`);
+                    // Only mark as deprecated if the endpoint is actually deprecated in the current version (right side)
+                    const rightOp = rightIdx.get(key);
+                    if (rightOp?.deprecated) {
+                        deprecated.push(`${key}`);
+                    }
+                }
+            }
+            
+            // Also check left-only endpoints for deprecation
+            for (const key of leftKeys) {
+                if (!rightKeys.has(key)) {
+                    const leftOp = leftIdx.get(key);
+                    if (leftOp?.deprecated) {
+                        deprecated.push(`${key} (removed but was deprecated)`);
+                    }
+                }
+            }
+
+            // Pair similar endpoints (same method + normalized path template) as modifications
+            const parseKey = (k)=>{ const sp=k.indexOf(' '); return {method:k.slice(0,sp), path:k.slice(sp+1), raw:k}; };
+            const normPath = (p)=> p.replace(/\{[^}]+\}/g,'{}');
+            const leftParsed = removed.map(parseKey);
+            const rightParsed = added.map(parseKey);
+            const rightBySig = new Map();
+            rightParsed.forEach(r=>{ const sig = r.method+" "+normPath(r.path); if (!rightBySig.has(sig)) rightBySig.set(sig, []); rightBySig.get(sig).push(r); });
+            const changedPairs = [];
+            const consumedAdded = new Set();
+            const consumedRemoved = new Set();
+            leftParsed.forEach(lp=>{
+                const sig = lp.method+" "+normPath(lp.path);
+                const candidates = rightBySig.get(sig) || [];
+                if (candidates.length) {
+                    const rp = candidates.shift();
+                    consumedRemoved.add(lp.raw);
+                    consumedAdded.add(rp.raw);
+                    // Diff details
+                    const details = [];
+                    if (lp.path !== rp.path) {
+                        const leftVars = Array.from(lp.path.matchAll(/\{([^}]+)\}/g)).map(m=>m[1]);
+                        const rightVars = Array.from(rp.path.matchAll(/\{([^}]+)\}/g)).map(m=>m[1]);
+                        if (leftVars.join(',') !== rightVars.join(',')) {
+                            details.push(`path params: ${leftVars.join(',')||'none'} → ${rightVars.join(',')||'none'}`);
+                        } else {
+                            details.push('path template changed');
+                        }
+                    }
+                    const opDiffs = compareOperations(leftIdx.get(lp.raw), rightIdx.get(rp.raw));
+                    if (opDiffs.length) details.push(opDiffs.join(', '));
+                    changedPairs.push({ left: lp.raw, right: rp.raw, details });
+                }
+            });
+            // Filter out consumed from added/removed
+            added = added.filter(a=> !consumedAdded.has(a));
+            removed = removed.filter(r=> !consumedRemoved.has(r));
+
+            // naive replacement suggestions among remaining added/removed
+            const replacements = [];
+            const addedParsed2 = added.map(parseKey);
+            const removedParsed2 = removed.map(parseKey);
+            removedParsed2.forEach(rm=>{
+                const tail = rm.path.split('/').slice(-2).join('/');
+                const cand = addedParsed2.find(ad=> ad.method===rm.method && (ad.path.endsWith(tail) || ad.path.replace(/\{.*?\}/g,'{}')===rm.path.replace(/\{.*?\}/g,'{}')));
+                if (cand) replacements.push(`${rm.method} ${rm.path} → ${cand.method} ${cand.path}`);
+            });
+
+            return { added, removed, changed, deprecated, replacements, changedPairs };
+        }
+
+        function renderDiff(leftSpec, rightSpec) {
+            // Only render if API Diff tab is visible
+            const apiDiffTab = document.getElementById('apiDiffTab');
+            if (!apiDiffTab || apiDiffTab.style.display === 'none') {
+                console.log('API Diff tab is not visible, skipping renderDiff');
+                return;
+            }
+            
+            const container = document.getElementById('apiDiffResults');
+            if (!container) {
+                console.error('apiDiffResults container not found!');
+                return;
+            }
+            console.log('Found apiDiffResults container:', container);
+            console.log('Container parent:', container.parentElement);
+            console.log('Container is in API Diff tab:', container.closest('#apiDiffTab') !== null);
+            container.style.display = 'block';
+            
+            // Create summary and result elements if they don't exist
+            let summary = document.getElementById('apiDiffSummary');
+            if (!summary) {
+                summary = document.createElement('div');
+                summary.id = 'apiDiffSummary';
+                container.appendChild(summary);
+            }
+            
+            let ulAdded = document.getElementById('diffAdded');
+            if (!ulAdded) {
+                ulAdded = document.createElement('ul');
+                ulAdded.id = 'diffAdded';
+                container.appendChild(ulAdded);
+            }
+            
+            let ulRemoved = document.getElementById('diffRemoved');
+            if (!ulRemoved) {
+                ulRemoved = document.createElement('ul');
+                ulRemoved.id = 'diffRemoved';
+                container.appendChild(ulRemoved);
+            }
+            
+            let ulChanged = document.getElementById('diffChanged');
+            if (!ulChanged) {
+                ulChanged = document.createElement('ul');
+                ulChanged.id = 'diffChanged';
+                container.appendChild(ulChanged);
+            }
+            
+            let ulDeprecated = document.getElementById('diffDeprecated');
+            if (!ulDeprecated) {
+                ulDeprecated = document.createElement('ul');
+                ulDeprecated.id = 'diffDeprecated';
+                container.appendChild(ulDeprecated);
+            }
+            try {
+                console.log('Computing diff...');
+                const startTime = Date.now();
+                const { added, removed, changed, deprecated, replacements, changedPairs } = computeDiff(leftSpec, rightSpec);
+                const diffTime = Date.now() - startTime;
+                console.log(`Diff computation took ${diffTime}ms`);
+                
+                const leftTitle = summarizeSpec(leftSpec);
+                const rightTitle = summarizeSpec(rightSpec);
+                
+                console.log('Diff results:', { added: added.length, removed: removed.length, changed: changed.length, deprecated: deprecated.length });
+                console.log('Added endpoints:', added.slice(0, 5)); // Show first 5 added
+                console.log('Removed endpoints:', removed.slice(0, 5)); // Show first 5 removed
+                console.log('Changed endpoints:', changed.slice(0, 5)); // Show first 5 changed
+                
+                // Create summary HTML
+                const summaryHtml = `
+                    <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <h4 style="color: #4CAF50; margin-bottom: 0.5rem;">Comparison Summary</h4>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                            <div style="text-align: center;">
+                                <div style="color: #4CAF50; font-size: 1.5rem; font-weight: bold;">${added.length}</div>
+                                <div style="color: #ccc; font-size: 0.9rem;">Added</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="color: #f44336; font-size: 1.5rem; font-weight: bold;">${removed.length}</div>
+                                <div style="color: #ccc; font-size: 0.9rem;">Removed</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="color: #ff9800; font-size: 1.5rem; font-weight: bold;">${changed.length}</div>
+                                <div style="color: #ccc; font-size: 0.9rem;">Changed</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="color: #9c27b0; font-size: 1.5rem; font-weight: bold;">${deprecated.length}</div>
+                                <div style="color: #ccc; font-size: 0.9rem;">Deprecated</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                summary.innerHTML = summaryHtml;
+                
+                // Force the container to be visible
+                container.style.display = 'block';
+                container.style.visibility = 'visible';
+                console.log('Container should now be visible with summary');
+                
+                // Create split columns if they don't exist
+                let leftCol = document.getElementById('leftChanges');
+                let rightCol = document.getElementById('rightChanges');
+                if (!leftCol || !rightCol) {
+                    const splitCols = document.createElement('div');
+                    splitCols.id = 'splitColumns';
+                    splitCols.style.cssText = 'display:flex;gap:12px;align-items:flex-start;margin-top:8px;';
+                    
+                    leftCol = document.createElement('div');
+                    leftCol.id = 'leftChanges';
+                    leftCol.style.cssText = 'flex:1 1 0;min-width:0;';
+                    leftCol.innerHTML = '<h4 style="color:#ccc">Left (baseline)</h4>';
+                    
+                    rightCol = document.createElement('div');
+                    rightCol.id = 'rightChanges';
+                    rightCol.style.cssText = 'flex:1 1 0;min-width:0;';
+                    rightCol.innerHTML = '<h4 style="color:#ccc">Right (comparison)</h4>';
+                    
+                    splitCols.appendChild(leftCol);
+                    splitCols.appendChild(rightCol);
+                    container.appendChild(splitCols);
+                }
+
+                const ownerOf = (entry)=>{
+                    if (typeof entry !== 'string') return 'unknown';
+                    const m = entry.match(/^([A-Z]+)\s+([^<]+)/);
+                    const path = m ? m[2] : entry;
+                    const segs = path.split('/').filter(Boolean);
+                    if (!segs.length) return 'unknown';
+                    if (segs[0]==='api' || segs[0]==='public' || segs[0]==='users') return 'core';
+                    return segs[0];
+                };
+                const renderGroupedList = (items)=>{
+                    const groups = {};
+                    (items||[]).forEach(i=>{ const key=ownerOf(i); (groups[key]=groups[key]||[]).push(i); });
+                    const order = Object.keys(groups).sort((a,b)=> a==='core'? -1 : (b==='core'?1 : a.localeCompare(b)));
+                    return order.map(k=>{
+                        const title = k==='core' ? 'Core' : `Extension: ${k}`;
+                        const lis = groups[k].map(i=>`<li>${i}</li>`).join('');
+                        return `<li style=\"list-style:none;margin:6px 0;\"><div style=\"color:#ccc;font-weight:bold;\">${title} (${groups[k].length})</div><ul>${lis}</ul></li>`;
+                    }).join('');
+                };
+
+                // Build per-side datasets - show only what exists on each side
+                const leftOnly = removed.slice(); // items only on left
+                const rightOnly = added.slice(); // items only on right
+                const leftChanged = changedPairs.map(p=>`${p.left}<br/><span class=\"diff-changed\">${(p.details||[]).join('; ')||'modified'}</span>`);
+                const rightChanged = changedPairs.map(p=>`${p.right}<br/><span class=\"diff-changed\">${(p.details||[]).join('; ')||'modified'}</span>`);
+
+                const leftOnlyHtml = leftOnly.length > 0 ? renderGroupedList(leftOnly) : '<li>None</li>';
+                const rightOnlyHtml = rightOnly.length > 0 ? renderGroupedList(rightOnly) : '<li>None</li>';
+                const leftChangedHtml = leftChanged.length > 0 ? renderGroupedList(leftChanged) : '<li>None</li>';
+                const rightChangedHtml = rightChanged.length > 0 ? renderGroupedList(rightChanged) : '<li>None</li>';
+
+                // Render paired comparison table and focus it
+                let paired = document.getElementById('pairedCompare');
+                if (!paired) {
+                    paired = document.createElement('div');
+                    paired.id = 'pairedCompare';
+                    container.appendChild(paired);
+                }
+                if (paired) {
+                    paired.innerHTML = `<h4 style=\"color:#ccc;margin-top:12px;\">Paired Comparison (row-by-row)</h4>`;
+                    try {
+                        paired.innerHTML += buildPairedRows(leftOnly, rightOnly, changedPairs, leftSpec, rightSpec, deprecated);
+                    } catch (e) {
+                        console.error('buildPairedRows error:', e);
+                        console.log('leftOnly:', leftOnly.length, 'rightOnly:', rightOnly.length, 'changedPairs:', changedPairs.length);
+                        paired.innerHTML += '<p>Error building comparison table</p>';
+                    }
+                    const splitCols = document.getElementById('splitColumns');
+                    if (splitCols) splitCols.style.display = 'none';
+                    paired.scrollIntoView({ behavior: 'auto', block: 'start' });
+                    
+                    // Add click handlers for collapsible groups
+                    paired.querySelectorAll('.paired-group').forEach(group => {
+                        group.addEventListener('click', () => {
+                            group.classList.toggle('collapsed');
+                        });
+                    });
+                }
+
+                if (leftCol) {
+                    leftCol.innerHTML = `<h4 style=\"color:#ccc\">Left (baseline) — ${leftTitle}</h4>
+                        <div style=\"color:#888;margin:4px 0;\">Only on Left: ${leftOnly.length} · Changed: ${leftChanged.length}</div>
+                        <div style=\"color:#ccc\"><strong>Only on Left</strong></div>
+                        <ul class=\"diff-list\">${leftOnlyHtml||'<li>None</li>'}</ul>
+                        <div style=\"margin-top:8px; color:#ccc;\"><strong>Changed (this side)</strong></div>
+                        <ul class=\"diff-list\">${leftChangedHtml||'<li>None</li>'}</ul>`;
+                }
+                if (rightCol) {
+                    rightCol.innerHTML = `<h4 style=\"color:#ccc\">Right (comparison) — ${rightTitle}</h4>
+                        <div style=\"color:#888;margin:4px 0;\">Only on Right: ${rightOnly.length} · Changed: ${rightChanged.length} · Deprecated: ${deprecated.length}</div>
+                        <div class=\"diff-added\"><strong>Only on Right</strong></div>
+                        <ul class=\"diff-list\">${rightOnlyHtml||'<li>None</li>'}</ul>
+                        <div style=\"margin-top:8px; color:#ccc;\"><strong>Changed (this side)</strong></div>
+                        <ul class=\"diff-list\">${rightChangedHtml||'<li>None</li>'}</ul>`;
+                }
+
+                // Paired comparison table is now the main view
+                container.style.display = 'block';
+                const compat = document.getElementById('compatImpactPanel');
+                if (compat) compat.style.display = 'block';
+                
+                // Scroll the results container to top to show the summary counts
+                container.scrollTop = 0;
+            } catch (e) {
+                console.error('renderDiff error', e);
+                if (ulAdded && ulRemoved && ulChanged && ulDeprecated) {
+                    const d = computeDiff(leftSpec,rightSpec);
+                    ulAdded.innerHTML = (d.added||[]).map(i=>`<li>${i}</li>`).join('');
+                    ulRemoved.innerHTML = (d.removed||[]).map(i=>`<li>${i}</li>`).join('');
+                    ulChanged.innerHTML = (d.changed||[]).map(i=>`<li>${i}</li>`).join('');
+                    ulDeprecated.innerHTML = (d.deprecated||[]).map(i=>`<li>${i}</li>`).join('');
+                    container.style.display = 'block';
+                    
+                    // Scroll the results container to top to show the summary counts
+                    container.scrollTop = 0;
+                }
+            }
+        }
+
+        function updateMeta(side, spec) {
+            const el = document.getElementById(side === 'left' ? 'leftMeta' : 'rightMeta');
+            el.textContent = spec ? summarizeSpec(spec) : 'No spec loaded.';
+        }
+
+        function normalizeUrl(u){
+            if (!u) return u;
+            if (/^https?:\/\//i.test(u)) {
+                // URL already has protocol, check if it needs /openapi.json
+                if (!u.endsWith('/openapi.json')) {
+                    return u.endsWith('/') ? u + 'openapi.json' : u + '/openapi.json';
+                }
+                return u;
+            }
+            // Remove leading slashes and add https://
+            const cleanUrl = u.replace(/^\/*/, '');
+            const baseUrl = 'https://' + cleanUrl;
+            // Append /openapi.json if not already present
+            return baseUrl.endsWith('/openapi.json') ? baseUrl : 
+                   baseUrl.endsWith('/') ? baseUrl + 'openapi.json' : 
+                   baseUrl + '/openapi.json';
+        }
+
+        async function handleLoadUrl(side) {
+            const input = document.getElementById(side === 'left' ? 'leftUrl' : 'rightUrl');
+            if (side === 'right' && !input.value) return; // Only require URL for manual right side loading
+            
+            try {
+                if (side === 'left') {
+                    // Load live installation
+                    const spec = await fetchJson(normalizeUrl(input.value));
+                    // Attach any extension versions we can infer from tags
+                    attachExtensionVersions(spec);
+                    
+                    // Also fetch manifest data for extension versions
+                    try {
+                        const manifestResponse = await fetch('https://raw.githubusercontent.com/lnbits/lnbits-extensions/main/extensions.json');
+                        const manifestData = await manifestResponse.json();
+                        const extensionVersions = {};
+                        manifestData.extensions.forEach(ext => {
+                            const key = ext.id.toLowerCase();
+                            extensionVersions[key] = {
+                                version: ext.version,
+                                name: ext.name,
+                                short_description: ext.short_description
+                            };
+                        });
+                        spec._manifestVersions = extensionVersions;
+                        console.log('Left side manifest versions:', extensionVersions);
+                    } catch (e) {
+                        console.log('Could not load manifest for left side:', e);
+                    }
+                    
+                    apiState[side] = spec;
+                    updateMeta(side, spec);
+                    switchToApiDiff();
+                    
+                    // Auto-load latest GitHub releases for comparison
+                    if (spec) {
+                        const rightInput = document.getElementById('rightUrl');
+                        rightInput.value = 'Loading latest from GitHub...';
+                        rightInput.disabled = true;
+                        
+                        const githubData = await fetchLatestFromGitHub(spec);
+                        if (githubData) {
+                            // Combine core and extension specs for comparison
+                            const combinedSpec = {
+                                ...githubData.core,
+                                paths: { ...githubData.core.paths }
+                            };
+                            
+                            // Add extension paths to the combined spec
+                            Object.keys(githubData.extensions).forEach(extName => {
+                                const extSpec = githubData.extensions[extName];
+                                if (extSpec && extSpec.paths) {
+                                    Object.keys(extSpec.paths).forEach(path => {
+                                        combinedSpec.paths[path] = extSpec.paths[path];
+                                    });
+                                }
+                            });
+                            
+                            // Carry over the extension version map and manifest data
+                            attachExtensionVersions(combinedSpec, githubData.extensions);
+                            combinedSpec._manifestVersions = githubData.manifest;
+                            
+                            console.log('Right side manifest versions:', githubData.manifest);
+                            console.log('Extension specs found:', Object.keys(githubData.extensions));
+                            
+                            apiState.right = combinedSpec;
+                            updateMeta('right', combinedSpec);
+                            rightInput.value = `Latest GitHub Release (${Object.keys(githubData.extensions).length} extensions)`;
+                            rightInput.disabled = false;
+                            renderDiff(apiState.left, apiState.right);
+                        } else {
+                            rightInput.value = 'Failed to load GitHub data';
+                            rightInput.disabled = false;
+                        }
+                    }
+                } else {
+                    // Manual right side loading
+                    const spec = await fetchJson(normalizeUrl(input.value));
+                    attachExtensionVersions(spec);
+                    apiState[side] = spec;
+                    updateMeta(side, spec);
+                    switchToApiDiff();
+                    if (apiState.left && apiState.right) renderDiff(apiState.left, apiState.right);
+                }
+            } catch (e) {
+                updateMeta(side, null);
+                alert(`Failed to load ${side} spec: ${e.message}`);
+            }
+        }
+
+        async function handleLoadFile(side) {
+            const input = document.getElementById(side === 'left' ? 'leftFile' : 'rightFile');
+            if (!input.files || !input.files[0]) return;
+            try {
+                const spec = await readFileAsJson(input.files[0]);
+                apiState[side] = spec;
+                updateMeta(side, spec);
+                switchToApiDiff();
+                if (apiState.left && apiState.right) renderDiff(apiState.left, apiState.right);
+            } catch (e) {
+                updateMeta(side, null);
+                alert(`Failed to parse ${side} file: ${e.message}`);
+            } finally {
+                input.value = '';
+            }
+        }
+
+        // New workflow handlers
+        async function handleCompareToDemo() {
+            const originInput = document.getElementById('originUrl');
+            if (!originInput.value.trim()) {
+                alert('Please enter your LNbits instance URL');
+                return;
+            }
+            
+            // Show loading state
+            const button = document.getElementById('compareToDemo');
+            const originalText = button.textContent;
+            button.textContent = 'Loading...';
+            button.disabled = true;
+            
+            try {
+                console.log('Starting comparison to demo...');
+                
+                // Add timeout to prevent hanging
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
+                );
+                
+                const fetchPromise = (async () => {
+                    // Load origin spec
+                    console.log('Fetching origin spec...');
+                    const originSpec = await fetchJson(normalizeUrl(originInput.value));
+                    attachExtensionVersions(originSpec);
+                    
+                    // Load manifest data for extension versions
+                    try {
+                        console.log('Loading manifest...');
+                        const manifestResponse = await fetch('https://raw.githubusercontent.com/lnbits/lnbits-extensions/main/extensions.json');
+                        const manifestData = await manifestResponse.json();
+                        const extensionVersions = {};
+                        manifestData.extensions.forEach(ext => {
+                            const key = ext.id.toLowerCase();
+                            extensionVersions[key] = {
+                                version: ext.version,
+                                name: ext.name,
+                                short_description: ext.short_description
+                            };
+                        });
+                        originSpec._manifestVersions = extensionVersions;
+                    } catch (e) {
+                        console.log('Could not load manifest for origin:', e);
+                    }
+                    
+                    // Load demo spec
+                    console.log('Fetching demo spec...');
+                    const demoSpec = await fetchJson('https://demo.lnbits.com/openapi.json');
+                    attachExtensionVersions(demoSpec);
+                    demoSpec._manifestVersions = originSpec._manifestVersions; // Use same manifest
+                    
+                    // Store specs
+                    apiState.left = originSpec;
+                    apiState.right = demoSpec;
+                    
+                    console.log('Rendering comparison...');
+                    // Update UI
+                    updateComparisonUI('Your Installation', 'demo.lnbits.com', originSpec, demoSpec);
+                    renderDiff(originSpec, demoSpec);
+                    
+                    console.log('Demo comparison completed successfully');
+                })();
+                
+                await Promise.race([fetchPromise, timeoutPromise]);
+                
+            } catch (error) {
+                console.error('Failed to compare to demo:', error);
+                if (error.message.includes('timeout')) {
+                    alert('Request timed out. The servers might be slow or unresponsive. Please try again.');
+                } else if (error.message.includes('CORS')) {
+                    alert('CORS error: Cannot access your LNbits instance from this browser. Make sure your instance allows CORS requests.');
+                } else {
+                    alert('Failed to load specs. Please check your URL and try again. Error: ' + error.message);
+                }
+            } finally {
+                // Reset button state
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+        
+        async function handleCompareCustom() {
+            const leftInput = document.getElementById('leftUrl');
+            const rightInput = document.getElementById('rightUrl');
+            
+            if (!leftInput.value.trim() || !rightInput.value.trim()) {
+                alert('Please enter both URLs to compare');
+                return;
+            }
+            
+            // Show loading state
+            const button = document.getElementById('compareCustom');
+            const originalText = button.textContent;
+            button.textContent = 'Loading...';
+            button.disabled = true;
+            
+            try {
+                console.log('Starting comparison...');
+                
+                // Add timeout to prevent hanging
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
+                );
+                
+                const fetchPromise = (async () => {
+                    // Load both specs
+                    console.log('Fetching left spec...');
+                    const leftSpec = await fetchJson(normalizeUrl(leftInput.value));
+                    console.log('Fetching right spec...');
+                    const rightSpec = await fetchJson(normalizeUrl(rightInput.value));
+                    
+                    console.log('Processing specs...');
+                    attachExtensionVersions(leftSpec);
+                    attachExtensionVersions(rightSpec);
+                    
+                    // Load manifest data for both
+                    try {
+                        console.log('Loading manifest...');
+                        const manifestResponse = await fetch('https://raw.githubusercontent.com/lnbits/lnbits-extensions/main/extensions.json');
+                        const manifestData = await manifestResponse.json();
+                        const extensionVersions = {};
+                        manifestData.extensions.forEach(ext => {
+                            const key = ext.id.toLowerCase();
+                            extensionVersions[key] = {
+                                version: ext.version,
+                                name: ext.name,
+                                short_description: ext.short_description
+                            };
+                        });
+                        leftSpec._manifestVersions = extensionVersions;
+                        rightSpec._manifestVersions = extensionVersions;
+                    } catch (e) {
+                        console.log('Could not load manifest:', e);
+                    }
+                    
+                    // Store specs
+                    apiState.left = leftSpec;
+                    apiState.right = rightSpec;
+                    
+                    console.log('Rendering comparison...');
+                    // Update UI
+                    updateComparisonUI('Left Instance', 'Right Instance', leftSpec, rightSpec);
+                    renderDiff(leftSpec, rightSpec);
+                    
+                    console.log('Comparison completed successfully');
+                })();
+                
+                await Promise.race([fetchPromise, timeoutPromise]);
+                
+            } catch (error) {
+                console.error('Failed to compare custom URLs:', error);
+                if (error.message.includes('timeout')) {
+                    alert('Request timed out. The servers might be slow or unresponsive. Please try again.');
+                } else if (error.message.includes('CORS')) {
+                    alert('CORS error: Cannot access the specified URLs from this browser. Try using the "Compare to demo" option instead.');
+                } else {
+                    alert('Failed to load specs. Please check your URLs and try again. Error: ' + error.message);
+                }
+            } finally {
+                // Reset button state
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+        
+        function updateComparisonUI(leftTitle, rightTitle, leftSpec, rightSpec) {
+            const leftTitleEl = document.getElementById('leftTitle');
+            const rightTitleEl = document.getElementById('rightTitle');
+            const leftMetaEl = document.getElementById('leftMeta');
+            const rightMetaEl = document.getElementById('rightMeta');
+            
+            if (leftTitleEl) leftTitleEl.textContent = leftTitle;
+            if (rightTitleEl) rightTitleEl.textContent = rightTitle;
+            if (leftMetaEl) leftMetaEl.textContent = leftSpec ? summarizeSpec(leftSpec) : 'No spec loaded.';
+            if (rightMetaEl) rightMetaEl.textContent = rightSpec ? summarizeSpec(rightSpec) : 'No spec loaded.';
+            
+            // Show the apiDiffResults container (which contains the comparison results)
+            const apiDiffResults = document.getElementById('apiDiffResults');
+            if (apiDiffResults) {
+                apiDiffResults.style.display = 'block';
+                console.log('API Diff results div should now be visible');
+            } else {
+                console.error('apiDiffResults element not found!');
+            }
+        }
+
+        // New workflow buttons
+        document.getElementById('compareToDemo').addEventListener('click', () => handleCompareToDemo());
+        document.getElementById('compareCustom').addEventListener('click', () => handleCompareCustom());
+        
+        // Legacy buttons (for backward compatibility)
+        const loadLeftBtn = document.getElementById('loadLeftUrl');
+        const loadRightBtn = document.getElementById('loadRightUrl');
+        const loadLeftFileBtn = document.getElementById('loadLeftFile');
+        const loadRightFileBtn = document.getElementById('loadRightFile');
+        
+        if (loadLeftBtn) loadLeftBtn.addEventListener('click', () => handleLoadUrl('left'));
+        if (loadRightBtn) loadRightBtn.addEventListener('click', () => handleLoadUrl('right'));
+        if (loadLeftFileBtn) loadLeftFileBtn.addEventListener('click', () => handleLoadFile('left'));
+        if (loadRightFileBtn) loadRightFileBtn.addEventListener('click', () => handleLoadFile('right'));
+
+        // Semver utils (simple)
+        function parseVersion(v){
+            const m = (v||'').match(/(\d+)\.(\d+)\.(\d+)/); if(!m) return {major:0,minor:0,patch:0}; return {major:+m[1],minor:+m[2],patch:+m[3]};
+        }
+        function cmp(a,b){ if(a.major!==b.major) return a.major-b.major; if(a.minor!==b.minor) return a.minor-b.minor; return a.patch-b.patch; }
+        function satisfies(v, range){
+            // supports ">=x.y.z", "<x.y.z", chained by commas
+            const ver=parseVersion(v);
+            return (range||'').split(',').every(r=>{
+                r=r.trim(); if(!r) return true; const op=r.slice(0,2).match(/[<>]=/) ? r.slice(0,2) : r[0];
+                const num=r.replace(/[<>]=?|=\s*/g,'').trim(); const tgt=parseVersion(num);
+                const c=cmp(ver,tgt);
+                if(op==='>=') return c>=0; if(op==='<=') return c<=0; if(op==='>') return c>0; if(op==='<') return c<0; if(op==='=') return c===0; return true;
+            });
+        }
+
+        function analyzeCompatibilityClick(){
+            const leftCore = document.getElementById('leftCoreVersion').value.trim();
+            const rightCore = document.getElementById('rightCoreVersion').value.trim();
+            let leftReq={}, rightReq={};
+            try{ leftReq = JSON.parse(document.getElementById('leftExtConstraints').value||'{}'); }catch(e){}
+            try{ rightReq = JSON.parse(document.getElementById('rightExtConstraints').value||'{}'); }catch(e){}
+            const used = (document.getElementById('usedPaths').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+
+            const hints=[]; let severity='green';
+            // core range checks
+            if(leftReq.lnbits && leftCore && !satisfies(leftCore,leftReq.lnbits)){ hints.push(`Left: core ${leftCore} not in required ${leftReq.lnbits}`); severity='red'; }
+            if(rightReq.lnbits && rightCore && !satisfies(rightCore,rightReq.lnbits)){ hints.push(`Right: core ${rightCore} not in required ${rightReq.lnbits}`); severity='red'; }
+            // extension deps summary
+            const leftDeps = (leftReq.deps||{}); const rightDeps=(rightReq.deps||{});
+            Object.keys(rightDeps).forEach(dep=>{ hints.push(`Right requires ${dep} ${rightDeps[dep]}`); });
+            Object.keys(leftDeps).forEach(dep=>{ hints.push(`Left requires ${dep} ${leftDeps[dep]}`); });
+
+            // API impact on used paths
+            if(apiState.left && apiState.right){
+                const {added,removed,changed} = computeDiff(apiState.left, apiState.right);
+                const affects = (arr)=>arr.filter(k=> used.some(p=> k.includes(` ${p}`)) );
+                const remA = affects(removed); const chA=affects(changed);
+                if(remA.length){ hints.push(`Removed endpoints in used paths: ${remA.length}`); severity='red'; }
+                if(chA.length){ hints.push(`Changed endpoints in used paths: ${chA.length}`); if(severity!=='red') severity='orange'; }
+            }
+
+            const verdictEl = document.getElementById('compatVerdict');
+            const hintsEl = document.getElementById('compatHints');
+            const color = severity==='red'?'#ff6b6b':(severity==='orange'?'#FFD166':'#4CAF50');
+            verdictEl.style.color=color;
+            verdictEl.textContent = severity==='green' ? 'Compatible' : (severity==='orange'?'Potentially risky':'Incompatible');
+            hintsEl.innerHTML = hints.map(h=>`<li>${h}</li>`).join('');
+        }
+
+        const analyzeBtn = document.getElementById('analyzeCompatibility');
+        if(analyzeBtn){ analyzeBtn.addEventListener('click', analyzeCompatibilityClick); }
+
         // Initialize on load
         window.addEventListener('load', function() {
             console.log('Window loaded, initializing...');
@@ -3456,6 +4542,467 @@
                 }
             }, 250);
         });
+
+        function buildPairedRows(leftOnly, rightOnly, changedPairs, leftSpec, rightSpec, deprecated = []){
+            console.log('buildPairedRows called with:', {
+                leftOnly: leftOnly.length,
+                rightOnly: rightOnly.length, 
+                changedPairs: changedPairs.length,
+                leftSpec: !!leftSpec,
+                rightSpec: !!rightSpec
+            });
+            
+            try {
+            // Extract version info - core versions from spec info
+            const leftVersion = leftSpec && leftSpec.info && leftSpec.info.version ? leftSpec.info.version : 'unknown';
+            const rightVersion = rightSpec && rightSpec.info && rightSpec.info.version ? rightSpec.info.version : 'unknown';
+            
+            const ownerOf = (entry)=>{
+                if (typeof entry !== 'string') return 'unknown';
+                const m = entry.match(/^([A-Z]+)\s+([^<]+)/);
+                const path = m ? m[2] : entry;
+                const segs = path.split('/').filter(Boolean);
+                if (!segs.length) return 'unknown';
+                if (segs[0]==='api' || segs[0]==='public' || segs[0]==='users') return 'core';
+                return segs[0];
+            };
+            
+            // Group core endpoints by functionality
+            const groupCoreEndpoints = (endpoints) => {
+                const groups = {
+                    'auth': [],
+                    'payments': [],
+                    'wallet': [],
+                    'users': [],
+                    'public': [],
+                    'other': []
+                };
+                
+                endpoints.forEach(endpoint => {
+                    const path = endpoint.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || endpoint;
+                    const lowerPath = path.toLowerCase();
+                    
+                    if (lowerPath.includes('/auth') || lowerPath.includes('/acl')) {
+                        groups.auth.push(endpoint);
+                    } else if (lowerPath.includes('/payment')) {
+                        groups.payments.push(endpoint);
+                    } else if (lowerPath.includes('/wallet')) {
+                        groups.wallet.push(endpoint);
+                    } else if (lowerPath.includes('/user')) {
+                        groups.users.push(endpoint);
+                    } else if (lowerPath.includes('/public')) {
+                        groups.public.push(endpoint);
+                    } else {
+                        groups.other.push(endpoint);
+                    }
+                });
+                
+                return groups;
+            };
+            
+            // Extract version info - core versions from spec info
+            const leftCoreVersion = leftSpec && leftSpec.info && leftSpec.info.version ? leftSpec.info.version : 'unknown';
+            const rightCoreVersion = rightSpec && rightSpec.info && rightSpec.info.version ? rightSpec.info.version : 'unknown';
+            
+            console.log(`Core versions - Left: ${leftCoreVersion}, Right: ${rightCoreVersion}`);
+            
+            // Get extension version from manifest info, fallback to tags-based extraction
+            const getExtensionVersion = (spec, extensionName, targetSpec = null) => {
+                console.log(`getExtensionVersion called with extensionName: "${extensionName}", spec:`, !!spec, 'targetSpec:', !!targetSpec);
+                if (!extensionName || !spec) return 'unknown';
+                
+                // Use targetSpec if provided, otherwise fall back to rightSpec for backward compatibility
+                const manifestSpec = targetSpec || rightSpec;
+                
+                console.log(`Getting version for ${extensionName}, spec has _manifestVersions:`, !!spec._manifestVersions);
+                console.log(`Target spec has _manifestVersions:`, !!manifestSpec._manifestVersions);
+                if (manifestSpec._manifestVersions) {
+                    console.log(`Available manifest versions:`, Object.keys(manifestSpec._manifestVersions));
+                    console.log(`Looking for key: "${extensionName.toLowerCase()}"`);
+                    console.log(`Available keys:`, Object.keys(manifestSpec._manifestVersions));
+                }
+                
+                // First try manifest info from target spec (most reliable)
+                if (manifestSpec && manifestSpec._manifestVersions && manifestSpec._manifestVersions[extensionName.toLowerCase()]) {
+                    const version = manifestSpec._manifestVersions[extensionName.toLowerCase()].version;
+                    console.log(`Found manifest version for ${extensionName}: ${version}`);
+                    return version;
+                }
+                
+                // Then try manifest info on the spec itself
+                if (spec._manifestVersions && spec._manifestVersions[extensionName.toLowerCase()]) {
+                    const version = spec._manifestVersions[extensionName.toLowerCase()].version;
+                    console.log(`Found spec manifest version for ${extensionName}: ${version}`);
+                    return version;
+                }
+                
+                // Then try manifest info on the spec itself (legacy)
+                if (spec._manifestInfo && spec._manifestInfo.version) {
+                    console.log(`Found manifest version for ${extensionName}: ${spec._manifestInfo.version}`);
+                    return spec._manifestInfo.version;
+                }
+                
+                // Fallback to attached _extVersions map
+                const key = String(extensionName).toLowerCase();
+                if (spec._extVersions && spec._extVersions[key]) {
+                    console.log(`Found _extVersions for ${extensionName}: ${spec._extVersions[key]}`);
+                    return spec._extVersions[key];
+                }
+                
+                // Last resort: tags-based extraction
+                if (!spec.tags) {
+                    console.log(`No tags found for ${extensionName}`);
+                    return 'unknown';
+                }
+                const tag = spec.tags.find(t => t.name && String(t.name).toLowerCase().includes(key));
+                const result = tag && tag.description ? tag.description.match(/v?(\d+\.\d+\.\d+)/)?.[1] || 'unknown' : 'unknown';
+                console.log(`Tags-based version for ${extensionName}: ${result}`);
+                return result;
+            };
+            
+            // Create a map of normalized paths to track all variations
+            const pathMap = new Map();
+            
+            // Process changed pairs - these are the same endpoint with differences
+            changedPairs.forEach(p=>{
+                const leftPath = p.left.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || p.left;
+                const rightPath = p.right.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || p.right;
+                const leftMethod = p.left.match(/^([A-Z]+)\s/)?.[1] || '';
+                const rightMethod = p.right.match(/^([A-Z]+)\s/)?.[1] || '';
+                
+                const key = leftPath; // use left path as base
+                pathMap.set(key, {
+                    owner: ownerOf(p.left),
+                    left: p.left,
+                    right: p.right,
+                    changes: (p.details||[]).join('; '),
+                    leftMethod,
+                    rightMethod,
+                    leftPath,
+                    rightPath
+                });
+            });
+            
+            // Smart endpoint matching - detect similar endpoints that should be compared
+            const smartMatches = [];
+            leftOnly.forEach(leftEndpoint => {
+                const leftPath = leftEndpoint.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || leftEndpoint;
+                const leftMethod = leftEndpoint.match(/^([A-Z]+)\s/)?.[1] || '';
+                
+                // Find similar right endpoint
+                const similarRight = rightOnly.find(rightEndpoint => {
+                    const rightPath = rightEndpoint.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || rightEndpoint;
+                    const rightMethod = rightEndpoint.match(/^([A-Z]+)\s/)?.[1] || '';
+                    
+                    // Same method and similar path structure
+                    if (leftMethod !== rightMethod) return false;
+                    
+                    // Extract path segments
+                    const leftSegs = leftPath.split('/').filter(Boolean);
+                    const rightSegs = rightPath.split('/').filter(Boolean);
+                    
+                    // Same number of segments and same structure (ignoring parameter names)
+                    if (leftSegs.length !== rightSegs.length) return false;
+                    
+                    // Check if segments match (ignoring parameter names)
+                    for (let i = 0; i < leftSegs.length; i++) {
+                        const leftSeg = leftSegs[i].replace(/^\{.*\}$/, '{}');
+                        const rightSeg = rightSegs[i].replace(/^\{.*\}$/, '{}');
+                        if (leftSeg !== rightSeg) return false;
+                    }
+                    
+                    return true;
+                });
+                
+                if (similarRight) {
+                    const rightPath = similarRight.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || similarRight;
+                    
+                    // Analyze the specific changes
+                    const leftSegs = leftPath.split('/').filter(Boolean);
+                    const rightSegs = rightPath.split('/').filter(Boolean);
+                    const changes = [];
+                    
+                    for (let i = 0; i < leftSegs.length; i++) {
+                        const leftSeg = leftSegs[i];
+                        const rightSeg = rightSegs[i];
+                        
+                        if (leftSeg !== rightSeg && leftSeg.startsWith('{') && rightSeg.startsWith('{')) {
+                            // Parameter name changed
+                            changes.push(`param: ${leftSeg.slice(1, -1)} → ${rightSeg.slice(1, -1)}`);
+                        }
+                    }
+                    
+                    smartMatches.push({
+                        left: leftEndpoint,
+                        right: similarRight,
+                        leftPath,
+                        rightPath,
+                        changes: changes.length > 0 ? changes.join('; ') : 'path parameters changed'
+                    });
+                }
+            });
+            
+            // Add smart matches to pathMap
+            smartMatches.forEach(match => {
+                const key = match.leftPath;
+                pathMap.set(key, {
+                    owner: ownerOf(match.left),
+                    left: match.left,
+                    right: match.right,
+                    changes: match.changes,
+                    leftMethod: match.left.match(/^([A-Z]+)\s/)?.[1] || '',
+                    rightMethod: match.right.match(/^([A-Z]+)\s/)?.[1] || '',
+                    leftPath: match.leftPath,
+                    rightPath: match.rightPath
+                });
+            });
+            
+            // Process left-only (removed from right) - exclude smart matches
+            leftOnly.forEach(l=>{
+                const path = l.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || l;
+                if (!pathMap.has(path)) {
+                    // Check if this endpoint is deprecated (including parent paths)
+                    const isDeprecated = deprecated.some(dep => {
+                        const depPath = dep.replace(/^[A-Z]+\s+/, ''); // Remove method prefix
+                        // Check if this path starts with any deprecated path
+                        return path.startsWith(depPath) || depPath.startsWith(path);
+                    });
+                    pathMap.set(path, {
+                        owner: ownerOf(l),
+                        left: l,
+                        right: '',
+                        changes: isDeprecated ? 'deprecated' : 'removed',
+                        leftMethod: l.match(/^([A-Z]+)\s/)?.[1] || '',
+                        rightMethod: '',
+                        leftPath: path,
+                        rightPath: ''
+                    });
+                }
+            });
+            
+            // Process right-only (added to right)
+            rightOnly.forEach(r=>{
+                const path = r.match(/^([A-Z]+)\s+([^<]+)/)?.[2] || r;
+                if (!pathMap.has(path)) {
+                    pathMap.set(path, {
+                        owner: ownerOf(r),
+                        left: '',
+                        right: r,
+                        changes: 'added',
+                        leftMethod: '',
+                        rightMethod: r.match(/^([A-Z]+)\s/)?.[1] || '',
+                        leftPath: '',
+                        rightPath: path
+                    });
+                }
+            });
+            
+            // Group by owner
+            const groups = {};
+            pathMap.forEach((data, path) => {
+                const owner = data.owner;
+                if (!groups[owner]) groups[owner] = [];
+                groups[owner].push(data);
+            });
+            
+            // Don't filter out extensions - show all extensions that have any endpoints
+            // Extensions might have different endpoint sets on left vs right
+            
+            // Build HTML
+            const groupOrder = Object.keys(groups).sort((a,b)=> a==='core'?-1:(b==='core'?1:a.localeCompare(b)));
+            let html = '';
+            groupOrder.forEach(g=>{
+                if (g === 'core') {
+                    // Special handling for core - group by functionality
+                    const coreData = groups[g];
+                    const coreGroups = groupCoreEndpoints(coreData.map(d => d.left || d.right).filter(Boolean));
+                    
+                    Object.keys(coreGroups).forEach(subGroup => {
+                        if (coreGroups[subGroup].length === 0) return;
+                        
+                        const subGroupData = coreData.filter(d => {
+                            const path = (d.left || d.right).match(/^([A-Z]+)\s+([^<]+)/)?.[2] || '';
+                            const lowerPath = path.toLowerCase();
+                            
+                            if (subGroup === 'auth') return lowerPath.includes('/auth') || lowerPath.includes('/acl');
+                            if (subGroup === 'payments') return lowerPath.includes('/payment');
+                            if (subGroup === 'wallet') return lowerPath.includes('/wallet');
+                            if (subGroup === 'users') return lowerPath.includes('/user');
+                            if (subGroup === 'public') return lowerPath.includes('/public');
+                            return subGroup === 'other';
+                        });
+                        
+                        if (subGroupData.length === 0) return;
+                        
+                        const subGroupTitle = subGroup.charAt(0).toUpperCase() + subGroup.slice(1);
+                        
+                        // Analyze changes in this group to generate bubbles
+                        const changeTypes = new Set();
+                        subGroupData.forEach(data => {
+                            if (data.changes === 'removed') changeTypes.add('removed');
+                            else if (data.changes === 'added') changeTypes.add('added');
+                            else if (data.changes === 'deprecated') changeTypes.add('deprecated');
+                            else if (data.changes) changeTypes.add('changed');
+                        });
+                        
+                        let bubbles = '';
+                        if (changeTypes.has('added')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#51cf66;margin-left:8px;" title="Added"></span>';
+                        if (changeTypes.has('removed')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ff6b6b;margin-left:8px;" title="Removed"></span>';
+                        if (changeTypes.has('changed')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ffa500;margin-left:8px;" title="Changed"></span>';
+                        if (changeTypes.has('deprecated')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#9c27b0;margin-left:8px;" title="Deprecated"></span>';
+                        
+                        html += `<div class="paired-group collapsed" style="padding:6px 8px; margin-top:12px;">Core: ${subGroupTitle}${bubbles}</div>`;
+                        html += `<table class="paired-table"><colgroup><col style=\"width:45%\"/><col style=\"width:45%\"/><col style=\"width:10%\"/></colgroup><thead><tr><th>v${leftVersion}</th><th>v${rightVersion}</th><th>Change</th></tr></thead><tbody>`;
+                        
+                        subGroupData.forEach(data=>{
+                            // Extract just the method and path, remove "Left" and "Right" prefixes
+                            let left = data.left ? data.left.replace(/^(Left|Right)\s+/, '') : '<span style="color:#555">—</span>';
+                            let right = data.right ? data.right.replace(/^(Left|Right)\s+/, '') : '<span style="color:#555">—</span>';
+                            let change = '';
+                            
+                            if (data.changes === 'removed') {
+                                // Check if this is actually "not installed" vs "removed"
+                                const isExtension = data.left && data.left.includes('/api/v1/');
+                                const leftVersion = getExtensionVersion(leftSpec, data.left, leftSpec);
+                                const rightVersion = getExtensionVersion(rightSpec, data.right, rightSpec);
+                                
+                                if (isExtension && leftVersion === 'unknown' && rightVersion !== 'unknown') {
+                                    change = '<span style="color:#ffa500">(not installed)</span>';
+                                } else {
+                                    change = '<span style="color:#ff6b6b">(removed)</span>';
+                                }
+                            } else if (data.changes === 'added') {
+                                change = '<span style="color:#51cf66">(added)</span>';
+                            } else if (data.changes === 'deprecated') {
+                                change = '<span style="color:#9c27b0">(deprecated)</span>';
+                            } else if (data.changes) {
+                                // Parse specific changes
+                                const changes = data.changes.split('; ');
+                                const changeParts = [];
+                                
+                                if (data.leftMethod !== data.rightMethod) {
+                                    changeParts.push(`method changed: ${data.leftMethod} → ${data.rightMethod}`);
+                                }
+                                
+                                changes.forEach(c => {
+                                    if (c.includes('path params:')) {
+                                        changeParts.push(c);
+                                    } else if (c.includes('operationId')) {
+                                        changeParts.push('operationId changed');
+                                    } else if (c.includes('parameters')) {
+                                        changeParts.push('parameters changed');
+                                    } else if (c.includes('responses')) {
+                                        changeParts.push('responses changed');
+                                    }
+                                });
+                                
+                                change = changeParts.length > 0 ? 
+                                    `<span class="diff-changed">${changeParts.join('; ')}</span>` : 
+                                    '<span class="diff-changed">modified</span>';
+                            }
+                            
+                            html += `<tr><td>${left}</td><td>${right}</td><td>${change}</td></tr>`;
+                        });
+                        
+                        html += `</tbody></table>`;
+                    });
+                } else {
+                    // Extension handling (unchanged)
+                    const title = `Extension: ${g}`;
+                    const isCollapsed = 'collapsed';
+                    
+                    // Get extension-specific versions if available
+                    let leftExtVersion = leftVersion;
+                    let rightExtVersion = rightVersion;
+                    leftExtVersion = getExtensionVersion(leftSpec, g, leftSpec);
+                    rightExtVersion = getExtensionVersion(rightSpec, g, rightSpec);
+                    
+                    // If we don't know the extension version, show "unknown" instead of core version
+                    if (leftExtVersion === 'unknown') {
+                        leftExtVersion = 'unknown';
+                    }
+                    if (rightExtVersion === 'unknown') {
+                        rightExtVersion = 'unknown';
+                    }
+                    
+                    // Analyze changes in this extension to generate bubbles
+                    const changeTypes = new Set();
+                    groups[g].forEach(data => {
+                        if (data.changes === 'removed') changeTypes.add('removed');
+                        else if (data.changes === 'added') changeTypes.add('added');
+                        else if (data.changes === 'deprecated') changeTypes.add('deprecated');
+                        else if (data.changes) changeTypes.add('changed');
+                    });
+                    
+                    let bubbles = '';
+                    if (changeTypes.has('added')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#51cf66;margin-left:8px;" title="Added"></span>';
+                    if (changeTypes.has('removed')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ff6b6b;margin-left:8px;" title="Removed"></span>';
+                    if (changeTypes.has('changed')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ffa500;margin-left:8px;" title="Changed"></span>';
+                    if (changeTypes.has('deprecated')) bubbles += '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#9c27b0;margin-left:8px;" title="Deprecated"></span>';
+                    
+                    html += `<div class="paired-group ${isCollapsed}" style="padding:6px 8px; margin-top:12px;">${title}${bubbles}</div>`;
+                    html += `<table class="paired-table"><colgroup><col style=\"width:45%\"/><col style=\"width:45%\"/><col style=\"width:10%\"/></colgroup><thead><tr><th>v${leftExtVersion}</th><th>v${rightExtVersion}</th><th>Change</th></tr></thead><tbody>`;
+                    
+                    groups[g].forEach(data=>{
+                        // Extract just the method and path, remove "Left" and "Right" prefixes
+                        let left = data.left ? data.left.replace(/^(Left|Right)\s+/, '') : '<span style="color:#555">—</span>';
+                        let right = data.right ? data.right.replace(/^(Left|Right)\s+/, '') : '<span style="color:#555">—</span>';
+                        let change = '';
+                        
+                        if (data.changes === 'removed') {
+                            // Check if this is actually "not installed" vs "removed"
+                            const isExtension = data.left && data.left.includes('/api/v1/');
+                            const leftVersion = getExtensionVersion(leftSpec, data.left, leftSpec);
+                            const rightVersion = getExtensionVersion(rightSpec, data.right, rightSpec);
+                            
+                            if (isExtension && leftVersion === 'unknown' && rightVersion !== 'unknown') {
+                                change = '<span style="color:#ffa500">(not installed)</span>';
+                            } else {
+                                change = '<span style="color:#ff6b6b">(removed)</span>';
+                            }
+                        } else if (data.changes === 'added') {
+                            change = '<span style="color:#51cf66">(added)</span>';
+                        } else if (data.changes === 'deprecated') {
+                            change = '<span style="color:#9c27b0">(deprecated)</span>';
+                        } else if (data.changes) {
+                            // Parse specific changes
+                            const changes = data.changes.split('; ');
+                            const changeParts = [];
+                            
+                            if (data.leftMethod !== data.rightMethod) {
+                                changeParts.push(`method changed: ${data.leftMethod} → ${data.rightMethod}`);
+                            }
+                            
+                            changes.forEach(c => {
+                                if (c.includes('path params:')) {
+                                    changeParts.push(c);
+                                } else if (c.includes('operationId')) {
+                                    changeParts.push('operationId changed');
+                                } else if (c.includes('parameters')) {
+                                    changeParts.push('parameters changed');
+                                } else if (c.includes('responses')) {
+                                    changeParts.push('responses changed');
+                                }
+                            });
+                            
+                            change = changeParts.length > 0 ? 
+                                `<span class="diff-changed">${changeParts.join('; ')}</span>` : 
+                                '<span class="diff-changed">modified</span>';
+                        }
+                        
+                        html += `<tr><td>${left}</td><td>${right}</td><td>${change}</td></tr>`;
+                    });
+                    
+                    html += `</tbody></table>`;
+                }
+            });
+            return html;
+            } catch (e) {
+                console.error('buildPairedRows internal error:', e);
+                console.error('Error stack:', e.stack);
+                return '<p>Error building comparison table: ' + e.message + '</p>';
+            }
+        }
     </script>
 </body>
 </html>

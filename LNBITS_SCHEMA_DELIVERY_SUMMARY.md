@@ -11,7 +11,7 @@ I've successfully delivered the comprehensive interactive database schema visual
 - **🎨 Beautiful Design**: Color-coded categories, modern UI
 - **📱 Mobile Responsive**: Works on all devices
 - **🔍 Smart Search**: Real-time filtering
-- **👥 Dual Views**: Developer vs End-user perspectives
+
 
 ### 2. **`lnbits_extensions_data.json`** - Comprehensive Data
 - **50+ Extensions**: Complete database models
