@@ -2,6 +2,8 @@
 
 **Interactive Database Explorer for LNbits**
 
+DESKTOP ONLY
+
 ## 🎯 Overview
 
 LNbits Table Town is an interactive database schema visualization that provides a comprehensive, zoomable, and filterable view of the LNbits database structure, including all extensions. It's designed for both developers and end-users to understand the LNbits ecosystem.
