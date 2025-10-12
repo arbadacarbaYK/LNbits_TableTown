@@ -1,4 +1,4 @@
-# LNbits Table Town 🏘️
+0# LNbits Table Town 🏘️
 
 **Interactive Database Explorer for LNbits**
 
@@ -184,7 +184,6 @@ The `lnbits_extensions_data.json` file contains:
 - **✅ High-Resolution Export**: Ultra-high DPI rendering for crisp image quality
 
 ### 🔮 Planned Features
-- **API Integration**: Real-time data from LNbits instances
 - **3D Visualization**: Three-dimensional schema representation
 - **Animation**: Smooth transitions and animations
 - **Performance Metrics**: Show table sizes and query performance
@@ -196,7 +195,6 @@ The `lnbits_extensions_data.json` file contains:
 The interface is fully responsive and works on:
 - **Desktop**: Full interactive experience
 - **Tablet**: Touch-friendly controls
-- **Mobile**: Simplified view with essential features
 
 ## 📄 License
 
